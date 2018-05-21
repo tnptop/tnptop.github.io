@@ -17,6 +17,16 @@ body {
 
 .center img {
   margin: 0 auto;
-  max-width: 95%;
+  max-width: 96%;
   max-height: auto;
+}
+
+@media screen and (orientation: portrait) {
+  .center img.portrait { display: inline-block; }
+  .center img.landscape { display: none; }
+}
+
+@media screen and (orientation: landscape) {
+  .center img.portrait { display: none; }
+  .center img.landscape { display: inline-block; }
 }
