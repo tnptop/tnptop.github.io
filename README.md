@@ -1,2 +1,4 @@
 # tnptop.github.io
-GitHub Page
+> Personal homepage for me (Thanapat Bhunnachet)
+
+## UNDER CONSTRUCTION
