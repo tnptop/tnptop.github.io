@@ -303,6 +303,26 @@
                  font-size: 54px; color: var(--paper); }
 
   /* ===========================================================
+     Slide 6a — mantra echo (web-only). Big centered text on plain
+     dark. Speaker doesn't navigate here during live delivery (voice
+     carries the close over the audience photo on slide 6); reachable
+     by pressing forward from 6 for anyone viewing the deck on the
+     web after the talk.
+     =========================================================== */
+  .s6a-lines { position: absolute; left: 0; right: 0; top: 50%;
+               transform: translateY(-50%); text-align: center;
+               padding: 0 80px; }
+  .s6a-la    { font-family: 'Fraunces', serif; font-weight: 300;
+               font-style: italic; font-size: 60px; line-height: 1.25;
+               color: var(--paper); }
+  .s6a-lb    { margin-top: 32px; font-family: 'Fraunces', serif;
+               font-weight: 600; font-size: 72px; line-height: 1.2;
+               color: var(--amber); }
+  .s6a-lc    { margin-top: 32px; font-family: 'Fraunces', serif;
+               font-weight: 900; font-size: 96px; line-height: 1.15;
+               color: var(--paper); }
+
+  /* ===========================================================
      Hint
      =========================================================== */
   .hint { position: absolute; top: 18px; right: 20px;
@@ -423,11 +443,14 @@
   </section>
 
   <!-- ===== Slide 6 — close ===== -->
-  <section class="slide s6 dark" data-slide="6">
-    <div class="s6-lines">
-      <div class="s6-la">We are the team that asks who built it &mdash; and why.</div>
-      <div class="s6-lb">The more AI, the more humans matter.</div>
-      <div class="s6-lc">Know the human behind the tool.</div>
+  <section class="slide s6 dark" data-slide="6"></section>
+
+  <!-- ===== Slide 6a — mantra echo (web-only, not navigated to live) ===== -->
+  <section class="slide dark" data-slide="6a">
+    <div class="s6a-lines">
+      <div class="s6a-la">We are the team that asks who built it &mdash; and why.</div>
+      <div class="s6a-lb">The more AI, the more humans matter.</div>
+      <div class="s6a-lc">Know the human behind the tool.</div>
     </div>
   </section>
 
@@ -455,7 +478,8 @@
     '4':  { left: 1660, top: 800, w: 300, h: 300, full: true  },
     '5a': { left: 1560, top: 150, w: 300, h: 300, full: false },
     '5b': { left: 1560, top: 150, w: 300, h: 300, full: true  },
-    '6':  { hidden: true }
+    '6':  { hidden: true },
+    '6a': { hidden: true }
   };
 
   // body bg class per slide id
