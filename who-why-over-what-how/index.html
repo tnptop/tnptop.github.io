@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Who/Why over What/How</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===========================================================
+     Stage setup
+     =========================================================== */
+  html, body { width: 100vw; height: 100vh; overflow: hidden;
+               margin: 0; padding: 0;
+               background: #000; /* letterbox */
+               font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+               display: flex; align-items: center; justify-content: center; }
+
+  /* The .stage is the fixed 1920x1080 deck canvas. JS scales it
+     via transform on resize to fit the viewport while preserving
+     the 16:9 aspect ratio. Black letterbox fills the leftover. */
+  .stage { position: relative;
+           width: 1920px; height: 1080px;
+           flex-shrink: 0; overflow: hidden;
+           background: var(--ink);
+           transition: background-color 1.0s ease;
+           transform-origin: center center; }
+  .stage.bg-light { background: var(--paper); }
+  .stage.bg-close { background: linear-gradient(180deg, #3A4254 0%, #262E40 52%, #161B27 100%); }
+
+  /* slides: stacked, full-viewport, opacity-controlled */
+  .slide {
+    position: absolute; inset: 0; width: 1920px; height: 1080px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  .slide.dark   { color: var(--paper); }
+  .slide.light  { color: var(--ink-text); }
+
+  /* ===========================================================
+     Persistent motif — position/size/wax animated
+     Uses an @property-registered custom prop so the gradient stop
+     animates smoothly. Bg fills to the border-box edge (no overlay,
+     no overflow:hidden), so the border sits over a fully-covered
+     interior and the dark slide bg can't show through.
+     =========================================================== */
+  @property --motif-fill-stop {
+    syntax: "<percentage>";
+    initial-value: 50%;
+    inherits: false;
+  }
+  .motif-x {
+    position: absolute; border-radius: 50%;
+    border: 3px solid var(--amber);
+    background: linear-gradient(to right,
+      rgba(230,162,60,0.95) 0 var(--motif-fill-stop, 50%),
+      transparent var(--motif-fill-stop, 50%) 100%);
+    opacity: 0; pointer-events: none;
+    transition:
+      left   1.2s ease-out,
+      top    1.2s ease-out,
+      width  1.2s ease-out,
+      height 1.2s ease-out,
+      opacity 0.6s ease,
+      --motif-fill-stop 1.4s ease-out;
+    z-index: 5;
+  }
+  .motif-x.visible { opacity: 1; }
+  .motif-x.full    { --motif-fill-stop: 100%; }
+
+  /* ===========================================================
+     Persistent TypeScript upper anchor — visible on 5a/5b only.
+     Stays put while only the lower zone cross-fades between
+     misconception and correction.
+     =========================================================== */
+  .ts-anchor {
+    position: absolute; inset: 0; width: 1920px; height: 1080px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+    z-index: 3;
+  }
+  .ts-anchor.visible { opacity: 1; }
+
+  /* ===========================================================
+     Persistent column divider — visible on slides 3 and 4 only.
+     Single neutral semi-transparent color so it reads on both
+     light (slide 3) and dark (slide 4) backgrounds without
+     needing a color transition during the slide cross-fade.
+     =========================================================== */
+  .divider-line {
+    position: absolute; left: 980px; top: 280px; width: 2px; height: 520px;
+    background: rgba(120, 130, 145, 0.35);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+    z-index: 3;
+  }
+  .divider-line.visible { opacity: 1; }
+
+  /* ===========================================================
+     Slide 1a — meetup collage (dark)
+     =========================================================== */
+  .s1a-eyebrow { position: absolute; left: 140px; top: 70px; font-size: 24px;
+                 color: var(--slate-dark); font-family: 'IBM Plex Mono', monospace;
+                 font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+                 z-index: 10; }
+  .shot { position: absolute; background-size: cover; background-position: center;
+          border: 10px solid var(--paper); box-shadow: 0 10px 28px rgba(0,0,0,0.6);
+          opacity: 0; transition: opacity 4s cubic-bezier(0.3, 0, 0.7, 1); }
+
+  /* Staggered entrance: photos fade in z-order back-to-front, each
+     over 4s with 2s between starts. 2s overlap window keeps the next
+     photo at ~50% opacity when the previous one "completes" --
+     continuous multi-photo motion. Last photo finishes at t=16s.
+     Triggered by .photos-on class on the slide (not .active), so
+     the speaker controls when the stagger starts with a forward
+     press rather than the animation auto-firing on page load.
+     Per-shot transition-delays apply only in the .photos-on state
+     so exits fade together without a reverse stagger. */
+  .slide[data-slide="1a"].photos-on .shot { opacity: 1; }
+  .slide[data-slide="1a"].photos-on .s-me { transition-delay: 0s; }
+  .slide[data-slide="1a"].photos-on .s-3  { transition-delay: 2s; }
+  .slide[data-slide="1a"].photos-on .s-2  { transition-delay: 4s; }
+  .slide[data-slide="1a"].photos-on .s-7  { transition-delay: 6s; }
+  .slide[data-slide="1a"].photos-on .s-4  { transition-delay: 8s; }
+  .slide[data-slide="1a"].photos-on .s-1  { transition-delay: 10s; }
+  .slide[data-slide="1a"].photos-on .s-5  { transition-delay: 12s; }
+  .s-me { left: 60px;   top: 600px; width: 460px; height: 307px;
+          background-image: url('img/openclaw-meetup-me.jpg');
+          transform: rotate(2deg);  z-index: 1; }
+  .s-1  { left: 30px;   top: 200px; width: 660px; height: 440px;
+          background-image: url('img/openclaw-meetup.jpg');
+          transform: rotate(-3deg); z-index: 4; }
+  .s-2  { left: 1180px; top: 40px;  width: 620px; height: 360px;
+          background-image: url('img/openclaw-meetup-2.jpg');
+          transform: rotate(5deg);  z-index: 3; }
+  .s-7  { left: 1080px; top: 380px; width: 440px; height: 293px;
+          background-image: url('img/openclaw-meetup-speaker.jpg');
+          transform: rotate(-4deg); z-index: 3; }
+  .s-4  { left: 1320px; top: 620px; width: 560px; height: 373px;
+          background-image: url('img/openclaw-meetup-4.jpg');
+          transform: rotate(3deg);  z-index: 3; }
+  .s-3  { left: 480px;  top: 120px; width: 660px; height: 440px;
+          background-image: url('img/openclaw-meetup-3.jpg');
+          transform: rotate(4deg);  z-index: 2; }
+  .s-5  { left: 540px;  top: 680px; width: 600px; height: 400px;
+          background-image: url('img/openclaw-meetup-5.jpg');
+          transform: rotate(-5deg); z-index: 4; }
+
+  /* ===========================================================
+     Slide 1b — Cohen quote (dark)
+     =========================================================== */
+  .s1b-quote  { position: absolute; left: 180px; top: 300px; width: 1560px;
+                font-family: 'Fraunces', serif; font-weight: 600;
+                font-size: 80px; line-height: 1.18; color: var(--paper); }
+  /* Highlight is paper (invisible from surrounding text) until the
+     .highlight-on class is added to the slide; then it transitions to
+     amber over 1.5s -- matching the spoken phrase beat. */
+  .s1b-quote .hl { color: var(--paper); transition: color 1.5s ease; }
+  .slide[data-slide="1b"].highlight-on .s1b-quote .hl { color: var(--amber); }
+  .s1b-source { position: absolute; left: 180px; top: 870px;
+                font-family: 'Fraunces', serif; font-style: italic; font-weight: 300;
+                font-size: 30px; color: var(--slate-dark); letter-spacing: 0.02em; }
+
+  /* ===========================================================
+     Slide 1 — title (dark)
+     =========================================================== */
+  .s1-eyebrow { position: absolute; left: 140px; top: 150px; font-size: 22px;
+                color: var(--slate-dark); font-family: 'IBM Plex Mono', monospace;
+                font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+  .s1-who     { position: absolute; left: 132px; top: 290px;
+                font-family: 'Fraunces', serif; font-size: 150px; font-weight: 900;
+                line-height: 1; color: var(--amber); }
+  .s1-over    { position: absolute; left: 150px; top: 490px;
+                font-family: 'Fraunces', serif; font-size: 60px; font-weight: 300;
+                font-style: italic; color: var(--slate-dark); }
+  .s1-what    { position: absolute; left: 132px; top: 580px;
+                font-family: 'Fraunces', serif; font-size: 150px; font-weight: 900;
+                line-height: 1; color: var(--paper); }
+  .s1-mantra  { position: absolute; left: 140px; top: 905px;
+                font-family: 'Fraunces', serif; font-size: 42px; font-weight: 300;
+                font-style: italic; color: var(--paper); }
+
+  /* ===========================================================
+     Slide 2 — diagnosis (light)
+     =========================================================== */
+  .s2-eyebrow { position: absolute; left: 140px; top: 150px; font-size: 24px;
+                color: var(--slate-light); font-family: 'IBM Plex Mono', monospace;
+                font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+  .s2-choices { position: absolute; left: 140px; top: 250px; font-size: 46px;
+                font-weight: 400; color: var(--ink-text); line-height: 1.65;
+                list-style: none; padding: 0; margin: 0; }
+  .s2-choices li::before { content: "—"; color: var(--amber); margin-right: 22px; }
+  .s2-hero    { position: absolute; left: 132px; top: 600px;
+                font-family: 'Fraunces', serif; font-size: 112px; font-weight: 900;
+                line-height: 1.0; color: var(--ink-text); }
+  .s2-hero .hl { color: var(--amber); }
+
+  /* ===========================================================
+     Slide 3 — naive read (light)
+     =========================================================== */
+  .s3-eyebrow { position: absolute; left: 180px; top: 140px; font-size: 24px;
+                color: var(--slate-light); font-family: 'IBM Plex Mono', monospace;
+                font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+  .s3-divider { position: absolute; left: 980px; top: 280px; width: 2px; height: 520px;
+                background: var(--slate-light); opacity: 0.35; }
+  .s3-col-a   { position: absolute; left: 180px; top: 290px; }
+  .s3-col-b   { position: absolute; left: 1060px; top: 290px; }
+  .s3-tool    { font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+                font-size: 60px; color: var(--ink-text); }
+  .s3-facts   { margin-top: 48px; font-size: 32px; font-weight: 400;
+                color: var(--ink-text); line-height: 1.8; list-style: none; padding: 0; }
+  .s3-facts li::before { content: "·"; color: var(--slate-light); margin-right: 18px; }
+  .s3-punch   { position: absolute; left: 180px; top: 900px; font-size: 42px;
+                font-weight: 300; font-style: italic; color: var(--slate-light);
+                font-family: 'Fraunces', serif; }
+
+  /* ===========================================================
+     Slide 4 — reveal (dark)
+     =========================================================== */
+  .s4-eyebrow { position: absolute; left: 140px; top: 150px; font-size: 24px;
+                color: var(--slate-dark); font-family: 'IBM Plex Mono', monospace;
+                font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+  .s4-col     { position: absolute; top: 290px; width: 720px; }
+  .s4-col-a   { left: 140px; }
+  .s4-col-b   { left: 1040px; }
+  .s4-label   { font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+                font-size: 26px; letter-spacing: 0.14em; text-transform: uppercase;
+                color: var(--slate-dark); }
+  .s4-name    { margin-top: 14px; font-family: 'Fraunces', serif; font-weight: 900;
+                font-size: 66px; line-height: 1.05; color: var(--amber); }
+  .s4-desc    { margin-top: 26px; font-size: 30px; font-weight: 400;
+                line-height: 1.5; color: var(--paper); }
+  .s4-land    { position: absolute; left: 140px; top: 820px;
+                font-family: 'Fraunces', serif; font-weight: 300; font-size: 66px;
+                line-height: 1.1; color: var(--paper); }
+  .s4-land .hl { font-weight: 600; color: var(--amber); }
+
+  /* ===========================================================
+     Slide 5a / 5b — TypeScript misconception → correction (light)
+     Shared upper anchor positions match across both slides.
+     =========================================================== */
+  .s5-eyebrow  { position: absolute; left: 140px; top: 150px; font-size: 24px;
+                 color: var(--slate-light); font-family: 'IBM Plex Mono', monospace;
+                 font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+  .s5-ts       { position: absolute; left: 140px; top: 226px;
+                 font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+                 font-size: 58px; color: var(--ink-text); }
+  .s5-creator  { position: absolute; left: 144px; top: 318px; font-size: 30px;
+                 font-weight: 500; color: var(--slate-light); }
+  .s5-lineage  { position: absolute; left: 144px; top: 366px;
+                 font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+                 font-size: 26px; letter-spacing: 0.03em; color: var(--slate-light); }
+  .s5-lineage-note { position: absolute; left: 144px; top: 406px;
+                     font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
+                     font-size: 24px; color: var(--slate-light); }
+  .s5-lbl      { position: absolute; left: 144px; top: 470px;
+                 font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+                 font-size: 22px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .s5a-lbl     { color: var(--slate-light); }
+  .s5b-lbl     { color: var(--amber); }
+  .s5-head     { position: absolute; left: 140px; top: 502px;
+                 font-family: 'Fraunces', serif; font-size: 82px; line-height: 1.02; }
+  .s5a-head    { font-weight: 600; color: var(--slate-light); }
+  .s5b-head    { font-weight: 900; color: var(--ink-text); }
+  .s5b-head .hl { color: var(--amber); }
+  .s5a-gloss   { position: absolute; left: 140px; top: 730px;
+                 font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
+                 font-size: 34px; line-height: 1.4; color: var(--slate-light); }
+  .s5b-quote   { position: absolute; left: 140px; top: 730px; width: 1500px;
+                 font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
+                 font-size: 34px; line-height: 1.3; color: var(--ink-text); }
+  .s5-attr     { position: absolute; left: 140px; top: 970px;
+                 font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+                 font-size: 22px; letter-spacing: 0.06em; }
+  .s5a-attr    { color: var(--slate-light); }
+  .s5b-attr    { color: var(--amber); }
+
+  /* ===========================================================
+     Slide 6 — close (gradient bg, three mantra lines)
+     =========================================================== */
+  /* Slide 6 — audience photo as full-bleed bg, dark gradient overlay
+     for text legibility. Fallback background-color shows if the photo
+     file is missing (lets the deck still render before the day-of
+     photo push). Filename includes the date for cache-busting: change
+     both the filename here AND the file in img/ each session. */
+  .s6 { background-color: var(--ink);
+        background-image: linear-gradient(180deg, rgba(15,22,41,0.35) 0%, rgba(15,22,41,0.85) 100%),
+                          url('img/audience-20260605.jpg');
+        background-size: cover; background-position: center; }
+  .s6-eyebrow  { position: absolute; left: 140px; top: 690px; font-size: 22px;
+                 color: var(--amber); opacity: 0.85;
+                 font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+                 letter-spacing: 0.14em; text-transform: uppercase; }
+  .s6-lines    { position: absolute; left: 140px; top: 742px; }
+  .s6-la       { font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
+                 font-size: 40px; color: var(--paper); }
+  .s6-lb       { margin-top: 16px; font-family: 'Fraunces', serif; font-weight: 600;
+                 font-size: 48px; color: var(--amber); }
+  .s6-lc       { margin-top: 16px; font-family: 'Fraunces', serif; font-weight: 900;
+                 font-size: 54px; color: var(--paper); }
+
+  /* ===========================================================
+     Hint
+     =========================================================== */
+  .hint { position: absolute; top: 18px; right: 20px;
+          font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+          color: rgba(120,120,140,0.45); pointer-events: none; z-index: 100; }
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <!-- persistent motif -->
+  <div class="motif-x"></div>
+
+  <!-- persistent TypeScript upper anchor (visible on 5a/5b only) -->
+  <div class="ts-anchor">
+    <div class="s5-eyebrow">Same lens, one more time</div>
+    <div class="s5-ts">TypeScript</div>
+    <div class="s5-creator">Anders Hejlsberg &middot; Microsoft</div>
+    <div class="s5-lineage">Turbo Pascal &middot; Delphi &middot; C# &middot; TypeScript</div>
+    <div class="s5-lineage-note">Four typed languages, one career.</div>
+  </div>
+
+  <!-- persistent column divider (visible on slides 3 and 4 only) -->
+  <div class="divider-line"></div>
+
+  <!-- ===== Slide 1a — meetup collage ===== -->
+  <section class="slide dark" data-slide="1a">
+    <div class="s1a-eyebrow">Earlier this year</div>
+    <div class="shot s-me"></div>
+    <div class="shot s-1"></div>
+    <div class="shot s-2"></div>
+    <div class="shot s-7"></div>
+    <div class="shot s-4"></div>
+    <div class="shot s-3"></div>
+    <div class="shot s-5"></div>
+  </section>
+
+  <!-- ===== Slide 1b — Cohen quote ===== -->
+  <section class="slide dark" data-slide="1b">
+    <div class="s1b-quote">&ldquo;OpenClaw is an impressive project, but I <span class="hl">wouldn&rsquo;t have been able to sleep</span> if I had given complex software I didn&rsquo;t understand full access to my life.&rdquo;</div>
+    <div class="s1b-source">&mdash; from a README&rsquo;s &ldquo;Why I build&rdquo; section</div>
+  </section>
+
+  <!-- ===== Slide 1 — title ===== -->
+  <section class="slide dark" data-slide="1">
+    <div class="s1-eyebrow">Closing keynote &nbsp;·&nbsp; CDO department &nbsp;·&nbsp; June 5</div>
+    <div class="s1-who">Who / Why</div>
+    <div class="s1-over">over</div>
+    <div class="s1-what">What / How</div>
+    <div class="s1-mantra">In the AI era, knowing humans matters more than ever.</div>
+  </section>
+
+  <!-- ===== Slide 2 — diagnosis ===== -->
+  <section class="slide light" data-slide="2">
+    <div class="s2-eyebrow">How we choose technology today</div>
+    <ul class="s2-choices">
+      <li>Fact sheets</li>
+      <li>What&rsquo;s popular</li>
+      <li>Peer recommendations</li>
+    </ul>
+    <div class="s2-hero">We read<br><span class="hl">half</span> the picture.</div>
+  </section>
+
+  <!-- ===== Slide 3 — naive read ===== -->
+  <section class="slide light" data-slide="3">
+    <div class="s3-eyebrow">Same problem space &nbsp;·&nbsp; an agentic AI assistant</div>
+    <div class="s3-divider"></div>
+    <div class="s3-col-a">
+      <div class="s3-tool">OpenClaw</div>
+      <ul class="s3-facts">
+        <li>28,000 &#9733; &nbsp;·&nbsp; trending on X</li>
+        <li>Batteries included: agents, plugins, GUI</li>
+        <li>One-command setup</li>
+      </ul>
+    </div>
+    <div class="s3-col-b">
+      <div class="s3-tool">NanoClaw</div>
+      <ul class="s3-facts">
+        <li>3,100 &#9733; &nbsp;·&nbsp; steady</li>
+        <li>Minimal core, ~5k lines</li>
+        <li>One-command setup</li>
+      </ul>
+    </div>
+    <div class="s3-punch">Read only this &mdash; and the hype picks OpenClaw.</div>
+  </section>
+
+  <!-- ===== Slide 4 — reveal ===== -->
+  <section class="slide dark" data-slide="4">
+    <div class="s4-eyebrow">Under a minute: who built it, and why</div>
+    <div class="s4-col s4-col-a">
+      <div class="s4-label">OpenClaw</div>
+      <div class="s4-name">Peter Steinberger</div>
+      <div class="s4-desc">A prolific tool-builder &mdash; PSPDFKit and dozens more. When agentic AI arrived, the instinct was to bundle everything. The README puts his name front and center.</div>
+    </div>
+    <div class="s4-col s4-col-b">
+      <div class="s4-label">NanoClaw</div>
+      <div class="s4-name">Gavriel Cohen</div>
+      <div class="s4-desc">An independent developer, lean and auditable by conviction. His name isn&rsquo;t even in the README &mdash; you find it in his blog and the commit graph.</div>
+    </div>
+    <div class="s4-land">Neither is wrong. <span class="hl">Which context rhymes with ours?</span></div>
+  </section>
+
+  <!-- ===== Slide 5a — TypeScript misconception (lower zone only;
+       upper anchor lives in .ts-anchor) ===== -->
+  <section class="slide light" data-slide="5a">
+    <div class="s5-lbl s5a-lbl">Looks like</div>
+    <div class="s5-head s5a-head">rigor.</div>
+    <div class="s5a-gloss">JavaScript with the discipline of a typed language.<br>Not &lsquo;optional types you can ignore.&rsquo;</div>
+    <div class="s5-attr s5a-attr">&mdash; what you expect from the &ldquo;typeness&rdquo;</div>
+  </section>
+
+  <!-- ===== Slide 5b — TypeScript correction (lower zone only) ===== -->
+  <section class="slide light" data-slide="5b">
+    <div class="s5-lbl s5b-lbl">Actually</div>
+    <div class="s5-head s5b-head">Meet people <span class="hl">where they are.</span></div>
+    <div class="s5b-quote">&ldquo;You&rsquo;re not going to be best of breed in the JavaScript ecosystem by telling people to write in a different programming language.&rdquo;</div>
+    <div class="s5-attr s5b-attr">&mdash; Anders Hejlsberg &middot; The Pragmatic Engineer, May 2026</div>
+  </section>
+
+  <!-- ===== Slide 6 — close ===== -->
+  <section class="slide s6 dark" data-slide="6">
+    <div class="s6-lines">
+      <div class="s6-la">We are the team that asks who built it &mdash; and why.</div>
+      <div class="s6-lb">The more AI, the more humans matter.</div>
+      <div class="s6-lc">Know the human behind the tool.</div>
+    </div>
+  </section>
+
+  <div class="hint">→ / ↓ / space / pgdn · ← / ↑ / pgup · click to advance</div>
+
+</div><!-- /.stage -->
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const motif = document.querySelector('.motif-x');
+  const tsAnchor = document.querySelector('.ts-anchor');
+  const tsSlides = ['5a', '5b'];
+  const divider = document.querySelector('.divider-line');
+  const dividerSlides = ['3', '4'];
+  let current = 0; // first slide in DOM order is the starting slide
+  let pendingShow = null;
+
+  // motif config per slide id
+  const motifConfig = {
+    '1a': { hidden: true },
+    '1b': { hidden: true },
+    '1':  { left: 1180, top: 150, w: 820, h: 820, full: false },
+    '2':  { left: 1320, top: 110, w: 540, h: 540, full: false },
+    '3':  { left: 1660, top: 800, w: 300, h: 300, full: false },
+    '4':  { left: 1660, top: 800, w: 300, h: 300, full: true  },
+    '5a': { left: 1560, top: 150, w: 300, h: 300, full: false },
+    '5b': { left: 1560, top: 150, w: 300, h: 300, full: true  },
+    '6':  { hidden: true }
+  };
+
+  // body bg class per slide id
+  const bgClass = {
+    '1a': '', '1b': '', '1': '', '4': '',       // dark
+    '2': 'bg-light', '3': 'bg-light',
+    '5a': 'bg-light', '5b': 'bg-light',
+    '6': 'bg-close'
+  };
+
+  function applyMotif(config) {
+    if (config.hidden) {
+      motif.classList.remove('visible');
+      return;
+    }
+    motif.classList.add('visible');
+    motif.style.left = config.left + 'px';
+    motif.style.top  = config.top  + 'px';
+    motif.style.width  = config.w + 'px';
+    motif.style.height = config.h + 'px';
+    motif.classList.toggle('full', config.full);
+  }
+
+  const stage = document.querySelector('.stage');
+
+  function setBg(slideId) {
+    stage.className = 'stage'; // reset to base
+    if (bgClass[slideId]) stage.classList.add(bgClass[slideId]);
+  }
+
+  // Scale the .stage to fit the viewport while preserving 16:9.
+  // The transform is applied to .stage; body uses flex to center it,
+  // and overflow:hidden + black bg gives a letterbox effect.
+  function fitStage() {
+    const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitStage);
+  fitStage();
+
+  function goTo(index) {
+    if (index < 0 || index >= slides.length) return;
+    if (index === current) return;
+
+    // === Slide 1a internal state ===
+    // First forward press on 1a triggers the staggered photo collage
+    // animation (no navigation). Second forward press advances to 1b.
+    // Backward press from photos-on un-toggles without leaving 1a.
+    const currentSlide = slides[current];
+    if (currentSlide.dataset.slide === '1a') {
+      const goingForward = index > current;
+      const photosOn = currentSlide.classList.contains('photos-on');
+      if (goingForward && !photosOn) {
+        currentSlide.classList.add('photos-on');
+        return;
+      }
+      if (!goingForward && photosOn) {
+        currentSlide.classList.remove('photos-on');
+        return;
+      }
+    }
+    // Reset 1a photos when entering from elsewhere, so every visit
+    // starts in the pre-animation state.
+    if (slides[index].dataset.slide === '1a' && currentSlide.dataset.slide !== '1a') {
+      slides[index].classList.remove('photos-on');
+    }
+
+    // === Slide 1b internal state ===
+    // First forward press on 1b toggles the amber highlight in place
+    // (no navigation). Second forward press advances to slide 1.
+    // Backward press from highlight-on un-highlights without leaving 1b.
+    if (currentSlide.dataset.slide === '1b') {
+      const goingForward = index > current;
+      const isHighlighted = currentSlide.classList.contains('highlight-on');
+      if (goingForward && !isHighlighted) {
+        currentSlide.classList.add('highlight-on');
+        return;
+      }
+      if (!goingForward && isHighlighted) {
+        currentSlide.classList.remove('highlight-on');
+        return;
+      }
+    }
+    // Reset 1b's highlight when entering it from elsewhere, so every
+    // visit starts in the pre-highlight state.
+    if (slides[index].dataset.slide === '1b' && currentSlide.dataset.slide !== '1b') {
+      slides[index].classList.remove('highlight-on');
+    }
+
+    // cancel any pending content reveal from a previous fast nav
+    if (pendingShow) { clearTimeout(pendingShow); pendingShow = null; }
+    const oldSlideId = slides[current].dataset.slide;
+    const newSlideId = slides[index].dataset.slide;
+    const oldInTs = tsSlides.includes(oldSlideId);
+    const newInTs = tsSlides.includes(newSlideId);
+    const oldInDiv = dividerSlides.includes(oldSlideId);
+    const newInDiv = dividerSlides.includes(newSlideId);
+    // fade out the current slide (no delay)
+    slides[current].classList.remove('active');
+    current = index;
+    // if leaving ts-territory or divider-territory, fade out immediately
+    if (oldInTs  && !newInTs)  tsAnchor.classList.remove('visible');
+    if (oldInDiv && !newInDiv) divider.classList.remove('visible');
+    // start motif glide + bg crossfade in parallel
+    applyMotif(motifConfig[newSlideId]);
+    setBg(newSlideId);
+    // wait for motif to land, then fade in new content (and persistent elements if entering)
+    pendingShow = setTimeout(() => {
+      slides[current].classList.add('active');
+      if (newInTs)  tsAnchor.classList.add('visible');
+      if (newInDiv) divider.classList.add('visible');
+      pendingShow = null;
+    }, 1000);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) {
+      e.preventDefault();
+      goTo(current + 1);
+    } else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) {
+      e.preventDefault();
+      goTo(current - 1);
+    }
+  });
+
+  document.body.addEventListener('click', () => goTo(current + 1));
+
+  // initialize motif + bg + persistent elements for the first slide
+  applyMotif(motifConfig[slides[current].dataset.slide]);
+  setBg(slides[current].dataset.slide);
+  if (tsSlides.includes(slides[current].dataset.slide))      tsAnchor.classList.add('visible');
+  if (dividerSlides.includes(slides[current].dataset.slide)) divider.classList.add('visible');
+
+  // Add .active via rAF so CSS transitions fire on initial page load
+  // (otherwise the slide and its staggered shots would just appear at
+  // their final state with no animation).
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      slides[current].classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+/* Who/Why over What/How — keynote deck (screenshot-ready, 1920x1080) */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,300;1,9..144,900&family=IBM+Plex+Mono:wght@500;600&family=Inter:wght@400;500&display=swap');
+
+:root {
+  --ink:        #0F1629; /* deep navy — the machine / technical */
+  --paper:      #F4F1EA; /* warm off-white — human warmth */
+  --amber:      #E6A23C; /* the human thread / accent */
+  --ink-text:   #1B2233; /* body text on paper */
+  --slate-dark: #738299; /* muted labels on dark bg */
+  --slate-light:#5C6678; /* muted labels on light bg */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; }
+
+.slide {
+  width: 1920px; height: 1080px;
+  position: relative; overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.slide.dark  { background: var(--ink);   color: var(--paper); }
+.slide.light { background: var(--paper); color: var(--ink-text); }
+
+/* type roles */
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.serif { font-family: 'Fraunces', serif; }
+.mono  { font-family: 'IBM Plex Mono', monospace; }
+
+/* absolute helper */
+.abs { position: absolute; }
+
+/* signature motif — half-filled ring = "half the picture".
+   .full completes the circle (used on the reveal + close). */
+.motif {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid var(--amber);
+  background: linear-gradient(to right, rgba(230,162,60,0.95) 0 50%, transparent 50% 100%);
+}
+.motif.full { background: rgba(230,162,60,0.95); }
