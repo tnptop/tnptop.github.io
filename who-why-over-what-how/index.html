@@ -101,7 +101,11 @@
   .s1a-eyebrow { position: absolute; left: 140px; top: 70px; font-size: 24px;
                  color: var(--slate-dark); font-family: 'IBM Plex Mono', monospace;
                  font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
-                 z-index: 10; }
+                 z-index: 10;
+                 opacity: 0; transition: opacity 4s cubic-bezier(0.3, 0, 0.7, 1); }
+  /* Eyebrow appears in sync with the first photo on the .photos-on trigger,
+     so a fresh-loaded 1a is just a dark slide until the speaker advances. */
+  .slide[data-slide="1a"].photos-on .s1a-eyebrow { opacity: 1; }
   .shot { position: absolute; background-size: cover; background-position: center;
           border: 10px solid var(--paper); box-shadow: 0 10px 28px rgba(0,0,0,0.6);
           opacity: 0; transition: opacity 4s cubic-bezier(0.3, 0, 0.7, 1); }
