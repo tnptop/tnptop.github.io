@@ -127,6 +127,15 @@
   .slide[data-slide="1a"].photos-on .s-4  { transition-delay: 8s; }
   .slide[data-slide="1a"].photos-on .s-1  { transition-delay: 10s; }
   .slide[data-slide="1a"].photos-on .s-5  { transition-delay: 12s; }
+
+  /* Short-circuit: forward press during the collage animation snaps
+     all photos to opacity 1 over ~0.4s. Higher specificity than the
+     per-shot transition-delays so it overrides them; transition-delay
+     reset to 0 so all photos go simultaneously. */
+  .slide[data-slide="1a"].photos-on.photos-instant .shot {
+    transition: opacity 0.4s ease-out;
+    transition-delay: 0s;
+  }
   .s-me { left: 60px;   top: 600px; width: 460px; height: 307px;
           background-image: url('img/openclaw-meetup-me.jpg');
           transform: rotate(2deg);  z-index: 1; }
@@ -525,19 +534,27 @@
     if (index === current) return;
 
     // === Slide 1a internal state ===
-    // First forward press on 1a triggers the staggered photo collage
-    // animation (no navigation). Second forward press advances to 1b.
-    // Backward press from photos-on un-toggles without leaving 1a.
+    // Forward presses cycle: pre -> animating -> instant-complete -> nav to 1b.
+    // 1st forward triggers staggered collage; 2nd short-circuits it (all photos
+    // snap to opacity 1 over ~0.4s for impatient viewers); 3rd navigates.
+    // Backward collapses any with-photos state back to pre in one press.
     const currentSlide = slides[current];
     if (currentSlide.dataset.slide === '1a') {
       const goingForward = index > current;
       const photosOn = currentSlide.classList.contains('photos-on');
+      const photosInstant = currentSlide.classList.contains('photos-instant');
       if (goingForward && !photosOn) {
         currentSlide.classList.add('photos-on');
         return;
       }
-      if (!goingForward && photosOn) {
+      if (goingForward && photosOn && !photosInstant) {
+        currentSlide.classList.add('photos-instant');
+        return;
+      }
+      // forward + both -> fall through, navigate to 1b
+      if (!goingForward && (photosOn || photosInstant)) {
         currentSlide.classList.remove('photos-on');
+        currentSlide.classList.remove('photos-instant');
         return;
       }
     }
@@ -545,6 +562,7 @@
     // starts in the pre-animation state.
     if (slides[index].dataset.slide === '1a' && currentSlide.dataset.slide !== '1a') {
       slides[index].classList.remove('photos-on');
+      slides[index].classList.remove('photos-instant');
     }
 
     // === Slide 1b internal state ===
