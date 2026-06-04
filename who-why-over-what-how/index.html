@@ -68,9 +68,11 @@
   .motif-x.full    { --motif-fill-stop: 100%; }
 
   /* ===========================================================
-     Persistent TypeScript upper anchor — visible on 5a/5b only.
+     Persistent IKEA upper anchor — visible on 5a/5b only.
      Stays put while only the lower zone cross-fades between
-     misconception and correction.
+     misconception and correction. (Class name kept as `ts-anchor`
+     internally to avoid renaming across CSS + JS — the slot is
+     "callback upper anchor," subject can change without churn.)
      =========================================================== */
   .ts-anchor {
     position: absolute; inset: 0; width: 1920px; height: 1080px;
@@ -248,7 +250,7 @@
   .s4-land .hl { font-weight: 600; color: var(--amber); }
 
   /* ===========================================================
-     Slide 5a / 5b — TypeScript misconception → correction (light)
+     Slide 5a / 5b — IKEA misconception → correction (light)
      Shared upper anchor positions match across both slides.
      =========================================================== */
   .s5-eyebrow  { position: absolute; left: 140px; top: 150px; font-size: 24px;
@@ -259,10 +261,9 @@
                  font-size: 58px; color: var(--ink-text); }
   .s5-creator  { position: absolute; left: 144px; top: 318px; font-size: 30px;
                  font-weight: 500; color: var(--slate-light); }
-  .s5-lineage  { position: absolute; left: 144px; top: 366px;
-                 font-family: 'IBM Plex Mono', monospace; font-weight: 500;
-                 font-size: 26px; letter-spacing: 0.03em; color: var(--slate-light); }
-  .s5-lineage-note { position: absolute; left: 144px; top: 406px;
+  /* lineage row removed — IKEA callback uses only the founding-context line
+     and the italic note (which moves up into the lineage slot). */
+  .s5-lineage-note { position: absolute; left: 144px; top: 364px;
                      font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
                      font-size: 24px; color: var(--slate-light); }
   .s5-lbl      { position: absolute; left: 144px; top: 470px;
@@ -345,13 +346,12 @@
   <!-- persistent motif -->
   <div class="motif-x"></div>
 
-  <!-- persistent TypeScript upper anchor (visible on 5a/5b only) -->
+  <!-- persistent IKEA upper anchor (visible on 5a/5b only) -->
   <div class="ts-anchor">
     <div class="s5-eyebrow">Same lens, one more time</div>
-    <div class="s5-ts">TypeScript</div>
-    <div class="s5-creator">Anders Hejlsberg &middot; Microsoft</div>
-    <div class="s5-lineage">Turbo Pascal &middot; Delphi &middot; C# &middot; TypeScript</div>
-    <div class="s5-lineage-note">Four typed languages, one career.</div>
+    <div class="s5-ts">IKEA</div>
+    <div class="s5-creator">Founded 1943 &middot; Sweden</div>
+    <div class="s5-lineage-note">Same playbook, every decade since.</div>
   </div>
 
   <!-- persistent column divider (visible on slides 3 and 4 only) -->
@@ -411,7 +411,7 @@
       <div class="s3-tool">NanoClaw</div>
       <ul class="s3-facts">
         <li>3,100 &#9733; &nbsp;·&nbsp; steady</li>
-        <li>Minimal core, ~5k lines</li>
+        <li>Minimal core, small enough to read end-to-end</li>
         <li>One-command setup</li>
       </ul>
     </div>
@@ -434,21 +434,21 @@
     <div class="s4-land">Neither is wrong. <span class="hl">Which context rhymes with ours?</span></div>
   </section>
 
-  <!-- ===== Slide 5a — TypeScript misconception (lower zone only;
+  <!-- ===== Slide 5a — IKEA misconception (lower zone only;
        upper anchor lives in .ts-anchor) ===== -->
   <section class="slide light" data-slide="5a">
     <div class="s5-lbl s5a-lbl">Looks like</div>
-    <div class="s5-head s5a-head">rigor.</div>
-    <div class="s5a-gloss">JavaScript with the discipline of a typed language.<br>Not &lsquo;optional types you can ignore.&rsquo;</div>
-    <div class="s5-attr s5a-attr">&mdash; what you expect from the &ldquo;typeness&rdquo;</div>
+    <div class="s5-head s5a-head">affordability.</div>
+    <div class="s5a-gloss">Cheap furniture, big-box stores,<br>flat-pack you assemble yourself.</div>
+    <div class="s5-attr s5a-attr">&mdash; what you read off the price tag</div>
   </section>
 
-  <!-- ===== Slide 5b — TypeScript correction (lower zone only) ===== -->
+  <!-- ===== Slide 5b — IKEA correction (lower zone only) ===== -->
   <section class="slide light" data-slide="5b">
     <div class="s5-lbl s5b-lbl">Actually</div>
     <div class="s5-head s5b-head">Meet people <span class="hl">where they are.</span></div>
-    <div class="s5b-quote">&ldquo;You&rsquo;re not going to be best of breed in the JavaScript ecosystem by telling people to write in a different programming language.&rdquo;</div>
-    <div class="s5-attr s5b-attr">&mdash; Anders Hejlsberg &middot; The Pragmatic Engineer, May 2026</div>
+    <div class="s5b-quote">&ldquo;We have decided once and for all to side with the many.&rdquo;</div>
+    <div class="s5-attr s5b-attr">&mdash; Testament of a Furniture Dealer, 1976</div>
   </section>
 
   <!-- ===== Slide 6 — close ===== -->
