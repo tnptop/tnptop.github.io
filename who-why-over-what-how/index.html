@@ -234,18 +234,21 @@
   .s4-eyebrow { position: absolute; left: 140px; top: 150px; font-size: 24px;
                 color: var(--slate-dark); font-family: 'IBM Plex Mono', monospace;
                 font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
-  .s4-col     { position: absolute; top: 290px; width: 720px; }
+  .s4-col     { position: absolute; top: 250px; width: 720px; }
   .s4-col-a   { left: 140px; }
   .s4-col-b   { left: 1040px; }
   .s4-label   { font-family: 'IBM Plex Mono', monospace; font-weight: 500;
                 font-size: 26px; letter-spacing: 0.14em; text-transform: uppercase;
                 color: var(--slate-dark); }
-  .s4-name    { margin-top: 14px; font-family: 'Fraunces', serif; font-weight: 900;
-                font-size: 66px; line-height: 1.05; color: var(--amber); }
-  .s4-desc    { margin-top: 26px; font-size: 30px; font-weight: 400;
-                line-height: 1.5; color: var(--paper); }
-  .s4-land    { position: absolute; left: 140px; top: 820px;
-                font-family: 'Fraunces', serif; font-weight: 300; font-size: 66px;
+  .s4-quote   { margin-top: 24px; font-family: 'Fraunces', serif; font-style: italic;
+                font-weight: 300; font-size: 30px; line-height: 1.38; color: var(--paper); }
+  .s4-name    { margin-top: 28px; font-family: 'Fraunces', serif; font-weight: 900;
+                font-size: 60px; line-height: 1.05; color: var(--amber); }
+  .s4-synth   { margin-top: 22px; font-family: 'Fraunces', serif; font-style: italic;
+                font-weight: 300; font-size: 26px; line-height: 1.3; color: var(--paper); }
+  .s4-synth b { font-style: normal; font-weight: 600; }
+  .s4-land    { position: absolute; left: 140px; top: 880px;
+                font-family: 'Fraunces', serif; font-weight: 300; font-size: 56px;
                 line-height: 1.1; color: var(--paper); }
   .s4-land .hl { font-weight: 600; color: var(--amber); }
 
@@ -372,7 +375,7 @@
   <!-- ===== Slide 1b — Cohen quote ===== -->
   <section class="slide dark" data-slide="1b">
     <div class="s1b-quote">&ldquo;OpenClaw is an impressive project, but I <span class="hl">wouldn&rsquo;t have been able to sleep</span> if I had given complex software I didn&rsquo;t understand full access to my life.&rdquo;</div>
-    <div class="s1b-source">&mdash; from a README&rsquo;s &ldquo;Why I build&rdquo; section</div>
+    <div class="s1b-source">&mdash; from a README&rsquo;s &ldquo;Why I Built NanoClaw&rdquo; section</div>
   </section>
 
   <!-- ===== Slide 1 — title ===== -->
@@ -402,7 +405,7 @@
     <div class="s3-col-a">
       <div class="s3-tool">OpenClaw</div>
       <ul class="s3-facts">
-        <li>28,000 &#9733; &nbsp;·&nbsp; trending on X</li>
+        <li>280,000 &#9733; &nbsp;·&nbsp; viral on X</li>
         <li>Batteries included: agents, plugins, GUI</li>
         <li>One-command setup</li>
       </ul>
@@ -410,7 +413,7 @@
     <div class="s3-col-b">
       <div class="s3-tool">NanoClaw</div>
       <ul class="s3-facts">
-        <li>3,100 &#9733; &nbsp;·&nbsp; steady</li>
+        <li>27,000 &#9733; &nbsp;·&nbsp; growing steadily</li>
         <li>Minimal core, small enough to read end-to-end</li>
         <li>One-command setup</li>
       </ul>
@@ -423,13 +426,15 @@
     <div class="s4-eyebrow">Under a minute: who built it, and why</div>
     <div class="s4-col s4-col-a">
       <div class="s4-label">OpenClaw</div>
+      <div class="s4-quote">&ldquo;I wanted an AI that could live where I already work&hellip; to work for me, not just talk to me.&rdquo;</div>
       <div class="s4-name">Peter Steinberger</div>
-      <div class="s4-desc">A prolific tool-builder &mdash; PSPDFKit and dozens more. When agentic AI arrived, the instinct was to bundle everything. The README puts his name front and center.</div>
+      <div class="s4-synth">Bundle-everything because that&rsquo;s what <b>he</b> needed.</div>
     </div>
     <div class="s4-col s4-col-b">
       <div class="s4-label">NanoClaw</div>
+      <div class="s4-quote">&ldquo;Wouldn&rsquo;t have been able to sleep if I&rsquo;d given complex software I didn&rsquo;t understand full access to my life.&rdquo;</div>
       <div class="s4-name">Gavriel Cohen</div>
-      <div class="s4-desc">An independent developer, lean and auditable by conviction. His name isn&rsquo;t even in the README &mdash; you find it in his blog and the commit graph.</div>
+      <div class="s4-synth">Lean-and-auditable because that&rsquo;s what <b>he</b> needed.</div>
     </div>
     <div class="s4-land">Neither is wrong. <span class="hl">Which context rhymes with ours?</span></div>
   </section>
