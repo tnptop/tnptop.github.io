@@ -217,12 +217,13 @@
                 font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
   .s3-divider { position: absolute; left: 980px; top: 280px; width: 2px; height: 520px;
                 background: var(--slate-light); opacity: 0.35; }
-  .s3-col-a   { position: absolute; left: 180px; top: 290px; }
-  .s3-col-b   { position: absolute; left: 1060px; top: 290px; }
+  .s3-col-a   { position: absolute; left: 180px; top: 290px; max-width: 760px; }
+  .s3-col-b   { position: absolute; left: 1060px; top: 290px; max-width: 760px; }
   .s3-tool    { font-family: 'IBM Plex Mono', monospace; font-weight: 600;
                 font-size: 60px; color: var(--ink-text); }
   .s3-facts   { margin-top: 48px; font-size: 32px; font-weight: 400;
                 color: var(--ink-text); line-height: 1.8; list-style: none; padding: 0; }
+  .s3-facts li { padding-left: 28px; text-indent: -28px; }
   .s3-facts li::before { content: "·"; color: var(--slate-light); margin-right: 18px; }
   .s3-punch   { position: absolute; left: 180px; top: 900px; font-size: 42px;
                 font-weight: 300; font-style: italic; color: var(--slate-light);
@@ -341,6 +342,111 @@
   .hint { position: absolute; top: 18px; right: 20px;
           font-family: 'IBM Plex Mono', monospace; font-size: 13px;
           color: rgba(120,120,140,0.45); pointer-events: none; z-index: 100; }
+
+  /* ===========================================================
+     Slide 3a (OpenClaw lookup) + 3b (NanoClaw lookup)
+     3 / 4 cards revealed one click at a time. Card 1 is visible
+     on entry; cumulative .step2 / .step3 / .step4 classes fade
+     subsequent cards in. The final click on each slide falls
+     through to the next slide.
+     =========================================================== */
+  .slide[data-slide="3a"] .s3ab-eyebrow,
+  .slide[data-slide="3b"] .s3ab-eyebrow {
+    position: absolute; left: 140px; top: 150px;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    font-size: 24px; letter-spacing: 0.14em; color: var(--slate-light);
+    text-transform: uppercase;
+  }
+  .slide[data-slide="3a"] .s3ab-time,
+  .slide[data-slide="3b"] .s3ab-time {
+    position: absolute; right: 140px; top: 150px;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+    font-size: 22px; letter-spacing: 0.1em; color: var(--amber);
+    text-transform: uppercase;
+  }
+  .slide[data-slide="3a"] .s3ab-row {
+    position: absolute; left: 140px; top: 220px;
+    width: 1640px; display: flex; gap: 40px;
+  }
+  .slide[data-slide="3b"] .s3ab-row {
+    position: absolute; left: 100px; top: 220px;
+    width: 1720px; display: flex; gap: 40px;
+  }
+  .s3ab-card { display: flex; flex-direction: column;
+               opacity: 0; transition: opacity 0.5s ease; }
+  .slide[data-slide="3a"] .s3ab-card { width: 520px; height: 720px; }
+  .slide[data-slide="3b"] .s3ab-card { width: 400px; height: 720px; }
+  .slide[data-slide="3a"] .s3ab-card.c-1,
+  .slide[data-slide="3b"] .s3ab-card.c-1 { opacity: 1; }
+  .slide[data-slide="3a"].step2 .s3ab-card.c-2 { opacity: 1; }
+  .slide[data-slide="3a"].step3 .s3ab-card.c-3 { opacity: 1; }
+  .slide[data-slide="3b"].step2 .s3ab-card.c-2 { opacity: 1; }
+  .slide[data-slide="3b"].step3 .s3ab-card.c-3 { opacity: 1; }
+  .slide[data-slide="3b"].step4 .s3ab-card.c-4 { opacity: 1; }
+
+  .s3ab-title {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+    letter-spacing: 0.1em; color: var(--slate-light);
+    text-transform: uppercase;
+  }
+  .slide[data-slide="3a"] .s3ab-title { font-size: 20px; }
+  .slide[data-slide="3b"] .s3ab-title { font-size: 18px; }
+
+  .s3ab-frame {
+    border: 1px solid rgba(120, 130, 145, 0.35);
+    flex: 1;
+    display: flex; flex-direction: column;
+    background: rgba(255, 255, 255, 0.45); border-radius: 4px;
+    min-height: 0;
+  }
+  .slide[data-slide="3a"] .s3ab-frame { margin-top: 16px; padding: 18px 20px; gap: 14px; }
+  .slide[data-slide="3b"] .s3ab-frame { margin-top: 14px; padding: 16px 18px; gap: 12px; }
+
+  .s3ab-url {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    color: var(--slate-light); word-break: break-all;
+    border-bottom: 1px solid rgba(120, 130, 145, 0.25);
+    flex-shrink: 0;
+  }
+  .slide[data-slide="3a"] .s3ab-url { font-size: 14px; padding-bottom: 10px; }
+  .slide[data-slide="3b"] .s3ab-url { font-size: 13px; padding-bottom: 8px; }
+
+  .s3ab-img-wrap {
+    flex: 1; display: flex; align-items: flex-start; justify-content: center;
+    overflow: hidden; min-height: 0;
+  }
+  .s3ab-img {
+    max-width: 100%; max-height: 100%; width: auto; height: auto;
+    object-fit: contain; display: block;
+    border: 1px solid rgba(120, 130, 145, 0.3);
+  }
+
+  .s3ab-label {
+    margin-top: 18px; font-family: 'Fraunces', serif;
+    font-weight: 600; color: var(--ink-text);
+  }
+  .slide[data-slide="3a"] .s3ab-label { font-size: 28px; line-height: 1.22; }
+  .slide[data-slide="3b"] .s3ab-label {
+    font-size: 24px; line-height: 1.25; min-height: 60px;
+  }
+
+  /* Slide 3a — card 2 compound layout (detail hero + overview inset + caption) */
+  .s3a-c2-vstack { flex: 1; display: flex; flex-direction: column;
+                   gap: 16px; min-height: 0; }
+  .s3a-c2-detail { width: 100%; height: auto; display: block;
+                   border: 1px solid rgba(120, 130, 145, 0.3); }
+  .s3a-c2-row    { flex: 1; display: flex; gap: 16px;
+                   align-items: stretch; min-height: 0; padding-top: 6px; }
+  .s3a-c2-inset  { height: 100%; width: auto; display: block;
+                   border: 1px solid rgba(230, 162, 60, 0.45); }
+  .s3a-c2-note   { flex: 1; font-family: 'IBM Plex Mono', monospace;
+                   font-size: 13px; color: var(--slate-light);
+                   line-height: 1.55; display: flex;
+                   flex-direction: column; justify-content: center;
+                   min-width: 0; }
+  .s3a-c2-tag    { display: block; color: var(--amber);
+                   letter-spacing: 0.1em; text-transform: uppercase;
+                   font-weight: 600; font-size: 11px; margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -421,6 +527,122 @@
     <div class="s3-punch">Read only this &mdash; and the hype picks OpenClaw.</div>
   </section>
 
+  <!-- ===== Slide 3a — OpenClaw lookup, 3 cards (one click per card) ===== -->
+  <section class="slide light" data-slide="3a">
+    <div class="s3ab-eyebrow">Looking up who made it &nbsp;·&nbsp; OpenClaw</div>
+    <div class="s3ab-time">~30 sec &nbsp;·&nbsp; 3 clicks</div>
+
+    <div class="s3ab-row">
+      <div class="s3ab-card c-1">
+        <div class="s3ab-title">1. Google search</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">google.com/search?q=openclaw</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-openclaw-1-serp.png"
+                 class="s3ab-img"
+                 alt="Google SERP for openclaw — projects everywhere, no author">
+          </div>
+        </div>
+        <div class="s3ab-label">Project&rsquo;s everywhere. Author isn&rsquo;t.</div>
+      </div>
+
+      <div class="s3ab-card c-2">
+        <div class="s3ab-title">2. Project intro page</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">github.com/openclaw/openclaw</div>
+          <div class="s3a-c2-vstack">
+            <img src="img/lookup-openclaw-2-molty-detail.png"
+                 class="s3a-c2-detail"
+                 alt="Molty section close-up — heading, byline with Peter Steinberger, bullets">
+            <div class="s3a-c2-row">
+              <img src="img/lookup-openclaw-2-readme-overview-marked.png"
+                   class="s3a-c2-inset"
+                   alt="Full README overview — the Molty section sits near the bottom">
+              <div class="s3a-c2-note">
+                <span class="s3a-c2-tag">Scrolled past:</span>
+                install &middot; security &middot; highlights &middot; docs &middot; apps &middot; agent workspace &middot; star history &middot; &hellip;
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="s3ab-label">His name&rsquo;s here &mdash; but who&rsquo;s Molty?</div>
+      </div>
+
+      <div class="s3ab-card c-3">
+        <div class="s3ab-title">3. molty.me</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">molty.me</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-openclaw-3-molty-me.png"
+                 class="s3ab-img"
+                 alt="molty.me — Peter's personal AI assistant page; @steipete sentence highlighted">
+          </div>
+        </div>
+        <div class="s3ab-label">One click out. Connection closed.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Slide 3b — NanoClaw lookup, 4 cards (one click per card) ===== -->
+  <section class="slide light" data-slide="3b">
+    <div class="s3ab-eyebrow">Looking up who made it &nbsp;·&nbsp; NanoClaw</div>
+    <div class="s3ab-time">~1 min &nbsp;·&nbsp; 4 clicks</div>
+
+    <div class="s3ab-row">
+      <div class="s3ab-card c-1">
+        <div class="s3ab-title">1. Google search</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">google.com/search?q=nanoclaw</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-nanoclaw-1-serp.png"
+                 class="s3ab-img"
+                 alt="Google SERP for nanoclaw — project + videos, no author named">
+          </div>
+        </div>
+        <div class="s3ab-label">Project&rsquo;s there. Author isn&rsquo;t.</div>
+      </div>
+
+      <div class="s3ab-card c-2">
+        <div class="s3ab-title">2. Project intro page</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">github.com/nanocoai/nanoclaw</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-nanoclaw-2-readme-why-built.png"
+                 class="s3ab-img"
+                 alt="NanoClaw README 'Why I Built NanoClaw' — first-person, no byline; red box on the first paragraph">
+          </div>
+        </div>
+        <div class="s3ab-label">The whole story. None of the name.</div>
+      </div>
+
+      <div class="s3ab-card c-3">
+        <div class="s3ab-title">3. Project website</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">nanoclaw.dev</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-nanoclaw-3-home.png"
+                 class="s3ab-img"
+                 alt="nanoclaw.dev home — clean marketing, no Gavriel name">
+          </div>
+        </div>
+        <div class="s3ab-label">Website doesn&rsquo;t say either.</div>
+      </div>
+
+      <div class="s3ab-card c-4">
+        <div class="s3ab-title">4. The why post</div>
+        <div class="s3ab-frame">
+          <div class="s3ab-url">nanoclaw.dev/blog/nanoclaw-security-model</div>
+          <div class="s3ab-img-wrap">
+            <img src="img/lookup-nanoclaw-4-blog-byline.png"
+                 class="s3ab-img"
+                 alt="Blog post 'Don't trust AI agents' — Gavriel Cohen byline and 'principle I built NanoClaw on' line both highlighted">
+          </div>
+        </div>
+        <div class="s3ab-label">Found him &mdash; alongside the why.</div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== Slide 4 — reveal ===== -->
   <section class="slide dark" data-slide="4">
     <div class="s4-eyebrow">Under a minute: who built it, and why</div>
@@ -489,6 +711,8 @@
     '1':  { left: 1180, top: 150, w: 820, h: 820, full: false },
     '2':  { left: 1320, top: 110, w: 540, h: 540, full: false },
     '3':  { left: 1660, top: 800, w: 300, h: 300, full: false },
+    '3a': { hidden: true },
+    '3b': { hidden: true },
     '4':  { left: 1660, top: 800, w: 300, h: 300, full: true  },
     '5a': { left: 1560, top: 150, w: 300, h: 300, full: false },
     '5b': { left: 1560, top: 150, w: 300, h: 300, full: true  },
@@ -500,6 +724,7 @@
   const bgClass = {
     '1a': '', '1b': '', '1': '', '4': '',       // dark
     '2': 'bg-light', '3': 'bg-light',
+    '3a': 'bg-light', '3b': 'bg-light',
     '5a': 'bg-light', '5b': 'bg-light',
     '6': 'bg-close'
   };
@@ -590,6 +815,50 @@
     // visit starts in the pre-highlight state.
     if (slides[index].dataset.slide === '1b' && currentSlide.dataset.slide !== '1b') {
       slides[index].classList.remove('highlight-on');
+    }
+
+    // === Slide 3a internal state (3 cards, click reveals one at a time) ===
+    if (currentSlide.dataset.slide === '3a') {
+      const goingForward = index > current;
+      const hasStep2 = currentSlide.classList.contains('step2');
+      const hasStep3 = currentSlide.classList.contains('step3');
+      if (goingForward) {
+        if (!hasStep2) { currentSlide.classList.add('step2'); return; }
+        if (!hasStep3) { currentSlide.classList.add('step3'); return; }
+        // both set -> fall through, navigate to 3b
+      } else {
+        if (hasStep3) { currentSlide.classList.remove('step3'); return; }
+        if (hasStep2) { currentSlide.classList.remove('step2'); return; }
+        // no steps -> fall through, navigate back to 3
+      }
+    }
+    if (slides[index].dataset.slide === '3a' && currentSlide.dataset.slide !== '3a') {
+      slides[index].classList.remove('step2');
+      slides[index].classList.remove('step3');
+    }
+
+    // === Slide 3b internal state (4 cards, click reveals one at a time) ===
+    if (currentSlide.dataset.slide === '3b') {
+      const goingForward = index > current;
+      const hasStep2 = currentSlide.classList.contains('step2');
+      const hasStep3 = currentSlide.classList.contains('step3');
+      const hasStep4 = currentSlide.classList.contains('step4');
+      if (goingForward) {
+        if (!hasStep2) { currentSlide.classList.add('step2'); return; }
+        if (!hasStep3) { currentSlide.classList.add('step3'); return; }
+        if (!hasStep4) { currentSlide.classList.add('step4'); return; }
+        // all set -> fall through, navigate to 4
+      } else {
+        if (hasStep4) { currentSlide.classList.remove('step4'); return; }
+        if (hasStep3) { currentSlide.classList.remove('step3'); return; }
+        if (hasStep2) { currentSlide.classList.remove('step2'); return; }
+        // no steps -> fall through, navigate back to 3a
+      }
+    }
+    if (slides[index].dataset.slide === '3b' && currentSlide.dataset.slide !== '3b') {
+      slides[index].classList.remove('step2');
+      slides[index].classList.remove('step3');
+      slides[index].classList.remove('step4');
     }
 
     // cancel any pending content reveal from a previous fast nav
