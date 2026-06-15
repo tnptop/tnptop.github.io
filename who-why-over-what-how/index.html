@@ -345,10 +345,12 @@
 
   /* ===========================================================
      Slide 3a (OpenClaw lookup) + 3b (NanoClaw lookup)
-     3 / 4 cards revealed one click at a time. Card 1 is visible
-     on entry; cumulative .step2 / .step3 / .step4 classes fade
-     subsequent cards in. The final click on each slide falls
-     through to the next slide.
+     Base state shows the full row (3 or 4 cards). Each forward
+     click cycles 0 base → 1 card 1 zoomed → 2 base → 3 card 2
+     zoomed → ... → 2N final base; the next click advances to the
+     next slide. Steps are tracked via the slide's data-step
+     attribute; per-card --wrap-tx/--wrap-ty/--wrap-s vars set the
+     fly-to-centre transform on the image-wrap.
      =========================================================== */
   .slide[data-slide="3a"] .s3ab-eyebrow,
   .slide[data-slide="3b"] .s3ab-eyebrow {
@@ -365,17 +367,15 @@
     position: absolute; left: 100px; top: 220px;
     width: 1720px; display: flex; gap: 40px;
   }
+  /* Card base: all cards visible at columns from entry. Zoom states
+     drive the fly-in animation; dimmed siblings keep row context. */
   .s3ab-card { display: flex; flex-direction: column;
-               opacity: 0; transition: opacity 0.5s ease; }
+               transform-origin: center center;
+               transition: opacity 0.32s ease, transform 0.32s ease, filter 0.32s ease; }
   .slide[data-slide="3a"] .s3ab-card { width: 520px; height: 720px; }
   .slide[data-slide="3b"] .s3ab-card { width: 400px; height: 720px; }
-  .slide[data-slide="3a"] .s3ab-card.c-1,
-  .slide[data-slide="3b"] .s3ab-card.c-1 { opacity: 1; }
-  .slide[data-slide="3a"].step2 .s3ab-card.c-2 { opacity: 1; }
-  .slide[data-slide="3a"].step3 .s3ab-card.c-3 { opacity: 1; }
-  .slide[data-slide="3b"].step2 .s3ab-card.c-2 { opacity: 1; }
-  .slide[data-slide="3b"].step3 .s3ab-card.c-3 { opacity: 1; }
-  .slide[data-slide="3b"].step4 .s3ab-card.c-4 { opacity: 1; }
+  .s3ab-card.dimmed  { opacity: 0.55; filter: saturate(0.65); transform: scale(0.97); }
+  .s3ab-card.zoomed  { z-index: 100; }
 
   .s3ab-title {
     font-family: 'IBM Plex Mono', monospace; font-weight: 600;
@@ -391,6 +391,7 @@
     display: flex; flex-direction: column;
     background: rgba(255, 255, 255, 0.45); border-radius: 4px;
     min-height: 0;
+    position: relative;  /* anchor for absolute c2-spotlight-only overlay */
   }
   .slide[data-slide="3a"] .s3ab-frame { margin-top: 16px; padding: 18px 20px; gap: 14px; }
   .slide[data-slide="3b"] .s3ab-frame { margin-top: 14px; padding: 16px 18px; gap: 12px; }
@@ -405,13 +406,97 @@
   .slide[data-slide="3b"] .s3ab-url { font-size: 13px; padding-bottom: 8px; }
 
   .s3ab-img-wrap {
-    flex: 1; display: flex; align-items: flex-start; justify-content: center;
-    overflow: hidden; min-height: 0;
+    flex: 1; display: flex;
+    align-items: flex-start;        /* parked: image at top of column slot */
+    justify-content: center;
+    min-height: 0;
   }
+  .s3ab-card.zoomed .s3ab-img-wrap {
+    align-items: center;            /* zoomed: centered so the image ends
+                                       at slide-centre after wrap scale */
+    overflow: visible;
+  }
+  .s3ab-card:not(.zoomed) .s3ab-img-wrap { overflow: hidden; }
   .s3ab-img {
     max-width: 100%; max-height: 100%; width: auto; height: auto;
     object-fit: contain; display: block;
     border: 1px solid rgba(120, 130, 145, 0.3);
+  }
+
+  /* Image-wrap fly: zooms from column slot to slide centre at ~972 px
+     tall. Uniform scale per card (set inline via --wrap-s) preserves
+     each image's natural aspect. Card chrome (title, frame, label)
+     stays in place at the column — the audience reads it as "the
+     image left the slot and zoomed to centre." */
+  .s3ab-img-wrap,
+  .c2-spotlight-only,
+  .c2-parked-only {
+    transition: transform 0.5s cubic-bezier(.34,.07,.18,1.02), opacity 0.32s ease;
+    transform-origin: center center;
+  }
+  .s3ab-card.zoomed .s3ab-img-wrap,
+  .s3ab-card.zoomed .c2-spotlight-only {
+    transform: translate(var(--wrap-tx, 0), var(--wrap-ty, 0))
+               scale(var(--wrap-s, 1));
+    z-index: 10;
+  }
+
+  /* Card 2 dual content: both spotlight and parked content stay in the
+     DOM always so the wrap's transform can transition smoothly when
+     .zoomed toggles (display:none → flex can't animate). The
+     c2-spotlight-only is an absolute overlay aligned with c2-parked-
+     only's flex-flow slot inside the frame:
+       top = padding-top (18) + URL (~30) + gap (14) = 62 ≈ 63
+       left/right = padding-x (20); bottom = padding-bottom (18). */
+  .c2-spotlight-only {
+    display: flex; flex-direction: column;
+    position: absolute;
+    top: 63px; right: 20px; bottom: 18px; left: 20px;
+    opacity: 0; pointer-events: none;
+    min-height: 0;
+  }
+  .c2-parked-only { display: flex; flex-direction: column; flex: 1; min-height: 0; opacity: 1; }
+  .s3ab-card.zoomed .c2-spotlight-only { opacity: 1; pointer-events: auto; }
+  .s3ab-card.zoomed .c2-parked-only    { opacity: 0; }
+
+  .c2-zoom-viewport {
+    flex: 1; overflow: hidden; position: relative; min-height: 0;
+    border: 1px solid rgba(120, 130, 145, 0.3);
+  }
+  /* Long README image — source is pre-cropped (sidebar + header
+     stripped, 599×4886 natural). Image fills the viewport width
+     directly; no horizontal offset needed. */
+  .c2-zoom-img {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: auto;
+    transform: translateY(0%) scale(1);
+    transform-origin: 50% 0%;
+  }
+  /* Image animation: pure scroll-down to Molty, no zoom on the image
+     itself. The "zoom" effect comes from the viewport scaling up
+     (see crop-to-molty below); since the viewport's scale also
+     scales the image, the image-to-viewport relative size is
+     preserved and the red box stays uncut. */
+  .s3ab-card.zoomed .c2-zoom-img {
+    animation: scroll-to-molty 4s cubic-bezier(.35,.05,.4,1) 0.3s forwards;
+  }
+  @keyframes scroll-to-molty {
+    0%   { transform: translateY(0%)   scale(1); }
+    55%  { transform: translateY(-77%) scale(1); }
+    100% { transform: translateY(-77%) scale(1); }
+  }
+
+  /* Viewport canvas crop + grow. During the second half of the
+     animation the viewport (a) crops to a landscape band via
+     clip-path (focusing on the Molty red box) and (b) scales up
+     1.3× — the canvas itself enlarges, and the image scales in
+     lockstep so image-to-viewport ratio stays constant. */
+  .s3ab-card.zoomed .c2-zoom-viewport {
+    animation: crop-to-molty 4s cubic-bezier(.35,.05,.4,1) 0.3s forwards;
+  }
+  @keyframes crop-to-molty {
+    0%, 55% { clip-path: inset(0%);     transform: scale(1);   }
+    100%    { clip-path: inset(25% 0%); transform: scale(1.3); }
   }
 
   .s3ab-label {
@@ -525,7 +610,8 @@
     <div class="s3ab-eyebrow">Looking up who made it &nbsp;·&nbsp; OpenClaw</div>
 
     <div class="s3ab-row">
-      <div class="s3ab-card c-1">
+      <div class="s3ab-card c-1"
+           style="--wrap-tx: 558px; --wrap-ty: -59px; --wrap-s: 1.96;">
         <div class="s3ab-title">1. Google search</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">google.com/search?q=openclaw</div>
@@ -538,21 +624,35 @@
         <div class="s3ab-label">Project&rsquo;s everywhere. Author isn&rsquo;t.</div>
       </div>
 
-      <div class="s3ab-card c-2">
+      <div class="s3ab-card c-2"
+           style="--wrap-tx: -2px; --wrap-ty: -59px; --wrap-s: 1.794;">
         <div class="s3ab-title">2. Project intro page</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">github.com/openclaw/openclaw</div>
-          <div class="s3a-c2-vstack">
-            <img src="img/lookup-openclaw-2-molty-detail.png"
-                 class="s3a-c2-detail"
-                 alt="Molty section close-up — heading, byline with Peter Steinberger, bullets">
-            <div class="s3a-c2-row">
+
+          <!-- Spotlight: long README with Ken Burns to Molty -->
+          <div class="c2-spotlight-only">
+            <div class="c2-zoom-viewport">
               <img src="img/lookup-openclaw-2-readme-overview-marked.png"
-                   class="s3a-c2-inset"
-                   alt="Full README overview — the Molty section sits near the bottom">
-              <div class="s3a-c2-note">
-                <span class="s3a-c2-tag">Scrolled past:</span>
-                install &middot; security &middot; highlights &middot; docs &middot; apps &middot; agent workspace &middot; star history &middot; &hellip;
+                   class="c2-zoom-img"
+                   alt="Full README — zoomed to the Molty section">
+            </div>
+          </div>
+
+          <!-- Parked: existing compound layout -->
+          <div class="c2-parked-only">
+            <div class="s3a-c2-vstack">
+              <img src="img/lookup-openclaw-2-molty-detail.png"
+                   class="s3a-c2-detail"
+                   alt="Molty section close-up — heading, byline with Peter Steinberger, bullets">
+              <div class="s3a-c2-row">
+                <img src="img/lookup-openclaw-2-readme-overview-marked.png"
+                     class="s3a-c2-inset"
+                     alt="Full README overview — the Molty section sits near the bottom">
+                <div class="s3a-c2-note">
+                  <span class="s3a-c2-tag">Scrolled past:</span>
+                  install &middot; security &middot; highlights &middot; docs &middot; apps &middot; agent workspace &middot; star history &middot; &hellip;
+                </div>
               </div>
             </div>
           </div>
@@ -560,7 +660,8 @@
         <div class="s3ab-label">His name&rsquo;s here &mdash; but who&rsquo;s Molty?</div>
       </div>
 
-      <div class="s3ab-card c-3">
+      <div class="s3ab-card c-3"
+           style="--wrap-tx: -562px; --wrap-ty: -59px; --wrap-s: 2.12;">
         <div class="s3ab-title">3. molty.me</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">molty.me</div>
@@ -580,7 +681,8 @@
     <div class="s3ab-eyebrow">Looking up who made it &nbsp;·&nbsp; NanoClaw</div>
 
     <div class="s3ab-row">
-      <div class="s3ab-card c-1">
+      <div class="s3ab-card c-1"
+           style="--wrap-tx: 660px; --wrap-ty: -40px; --wrap-s: 2.13;">
         <div class="s3ab-title">1. Google search</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">google.com/search?q=nanoclaw</div>
@@ -593,7 +695,8 @@
         <div class="s3ab-label">Project&rsquo;s there. Author isn&rsquo;t.</div>
       </div>
 
-      <div class="s3ab-card c-2">
+      <div class="s3ab-card c-2"
+           style="--wrap-tx: 220px; --wrap-ty: -40px; --wrap-s: 2.79;">
         <div class="s3ab-title">2. Project intro page</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">github.com/nanocoai/nanoclaw</div>
@@ -606,7 +709,8 @@
         <div class="s3ab-label">The whole story. None of the name.</div>
       </div>
 
-      <div class="s3ab-card c-3">
+      <div class="s3ab-card c-3"
+           style="--wrap-tx: -220px; --wrap-ty: -40px; --wrap-s: 2.14;">
         <div class="s3ab-title">3. Project website</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">nanoclaw.dev</div>
@@ -619,7 +723,8 @@
         <div class="s3ab-label">Website doesn&rsquo;t say either.</div>
       </div>
 
-      <div class="s3ab-card c-4">
+      <div class="s3ab-card c-4"
+           style="--wrap-tx: -660px; --wrap-ty: -40px; --wrap-s: 2.75;">
         <div class="s3ab-title">4. The why post</div>
         <div class="s3ab-frame">
           <div class="s3ab-url">nanoclaw.dev/blog/nanoclaw-security-model</div>
@@ -750,6 +855,21 @@
   window.addEventListener('resize', fitStage);
   fitStage();
 
+  // Set .zoomed / .dimmed classes on cards within a slide given the step.
+  // step % 2 === 1: a card is zoomed (card index = (step - 1) / 2);
+  // step % 2 === 0: base state, no card zoomed.
+  function paintZoomCards(slide, step) {
+    const cards = slide.querySelectorAll('.s3ab-card');
+    cards.forEach((card, idx) => {
+      card.classList.remove('zoomed', 'dimmed');
+      if (step % 2 === 1) {
+        const zoomedIdx = (step - 1) / 2;
+        if (idx === zoomedIdx) card.classList.add('zoomed');
+        else                   card.classList.add('dimmed');
+      }
+    });
+  }
+
   function goTo(index) {
     if (index < 0 || index >= slides.length) return;
     if (index === current) return;
@@ -808,48 +928,39 @@
       slides[index].classList.remove('highlight-on');
     }
 
-    // === Slide 3a internal state (3 cards, click reveals one at a time) ===
-    if (currentSlide.dataset.slide === '3a') {
+    // === Slides 3a / 3b internal state (zoom-then-base, step 0..2N) ===
+    // Each forward click cycles: 0 base → 1 card 1 zoomed → 2 base → 3 card 2
+    // zoomed → ... → 2N final base. Each backward click reverses one beat.
+    // step at extreme (0 going back, 2N going forward) falls through to nav.
+    if (currentSlide.dataset.slide === '3a' || currentSlide.dataset.slide === '3b') {
       const goingForward = index > current;
-      const hasStep2 = currentSlide.classList.contains('step2');
-      const hasStep3 = currentSlide.classList.contains('step3');
-      if (goingForward) {
-        if (!hasStep2) { currentSlide.classList.add('step2'); return; }
-        if (!hasStep3) { currentSlide.classList.add('step3'); return; }
-        // both set -> fall through, navigate to 3b
-      } else {
-        if (hasStep3) { currentSlide.classList.remove('step3'); return; }
-        if (hasStep2) { currentSlide.classList.remove('step2'); return; }
-        // no steps -> fall through, navigate back to 3
+      const n = currentSlide.dataset.slide === '3a' ? 3 : 4;
+      const maxStep = 2 * n;
+      let step = parseInt(currentSlide.dataset.step || '0', 10);
+      if (goingForward && step < maxStep) {
+        step += 1;
+        currentSlide.dataset.step = step;
+        paintZoomCards(currentSlide, step);
+        return;
       }
+      if (!goingForward && step > 0) {
+        step -= 1;
+        currentSlide.dataset.step = step;
+        paintZoomCards(currentSlide, step);
+        return;
+      }
+      // step at extreme + going further → fall through to slide change.
     }
-    if (slides[index].dataset.slide === '3a' && currentSlide.dataset.slide !== '3a') {
-      slides[index].classList.remove('step2');
-      slides[index].classList.remove('step3');
-    }
-
-    // === Slide 3b internal state (4 cards, click reveals one at a time) ===
-    if (currentSlide.dataset.slide === '3b') {
+    // Reset 3a / 3b step when entering from elsewhere. Forward entry starts
+    // at base (step 0); backward entry starts at final base (step 2N), so
+    // pressing back again steps through the slide in reverse.
+    const enterId = slides[index].dataset.slide;
+    if ((enterId === '3a' || enterId === '3b') && currentSlide.dataset.slide !== enterId) {
       const goingForward = index > current;
-      const hasStep2 = currentSlide.classList.contains('step2');
-      const hasStep3 = currentSlide.classList.contains('step3');
-      const hasStep4 = currentSlide.classList.contains('step4');
-      if (goingForward) {
-        if (!hasStep2) { currentSlide.classList.add('step2'); return; }
-        if (!hasStep3) { currentSlide.classList.add('step3'); return; }
-        if (!hasStep4) { currentSlide.classList.add('step4'); return; }
-        // all set -> fall through, navigate to 4
-      } else {
-        if (hasStep4) { currentSlide.classList.remove('step4'); return; }
-        if (hasStep3) { currentSlide.classList.remove('step3'); return; }
-        if (hasStep2) { currentSlide.classList.remove('step2'); return; }
-        // no steps -> fall through, navigate back to 3a
-      }
-    }
-    if (slides[index].dataset.slide === '3b' && currentSlide.dataset.slide !== '3b') {
-      slides[index].classList.remove('step2');
-      slides[index].classList.remove('step3');
-      slides[index].classList.remove('step4');
+      const nEnter = enterId === '3a' ? 3 : 4;
+      const initialStep = goingForward ? 0 : 2 * nEnter;
+      slides[index].dataset.step = String(initialStep);
+      paintZoomCards(slides[index], initialStep);
     }
 
     // cancel any pending content reveal from a previous fast nav
