@@ -24,7 +24,9 @@
            transition: background-color 1.0s ease;
            transform-origin: center center; }
   .stage.bg-light { background: var(--paper); }
-  .stage.bg-close { background: linear-gradient(180deg, #3A4254 0%, #262E40 52%, #161B27 100%); }
+  /* bg-close removed: the stage gradient flashed during the 1s motif-glide
+     window before slide 6 faded in. Slide 6 has its own .s6 gradient that
+     fades in with the slide itself — that's the only gradient we want. */
 
   /* slides: stacked, full-viewport, opacity-controlled */
   .slide {
@@ -739,6 +741,33 @@
     </div>
   </section>
 
+  <!-- ===== Slide 3 (reprise) — return to the naive read after the lookups,
+       grounding the speaker before the slide-4 reveal. Identical to the
+       first slide-3 instance; the motif + divider fade back in as we leave
+       3b, then the motif's half→full fill animates on the slide-3→slide-4
+       transition. ===== -->
+  <section class="slide light" data-slide="3">
+    <div class="s3-eyebrow">Same problem space &nbsp;·&nbsp; an agentic AI assistant</div>
+    <div class="s3-divider"></div>
+    <div class="s3-col-a">
+      <div class="s3-tool">OpenClaw</div>
+      <ul class="s3-facts">
+        <li>280,000 &#9733; &nbsp;·&nbsp; viral on X</li>
+        <li>Bundles everything: agents, plug-ins, ready-to-use app</li>
+        <li>Installs in a single step</li>
+      </ul>
+    </div>
+    <div class="s3-col-b">
+      <div class="s3-tool">NanoClaw</div>
+      <ul class="s3-facts">
+        <li>27,000 &#9733; &nbsp;·&nbsp; growing steadily</li>
+        <li>Small core &mdash; short enough to read in one sitting</li>
+        <li>Installs in a single step</li>
+      </ul>
+    </div>
+    <div class="s3-punch">Read only this &mdash; and the hype picks OpenClaw.</div>
+  </section>
+
   <!-- ===== Slide 4 — reveal ===== -->
   <section class="slide dark" data-slide="4">
     <div class="s4-eyebrow">Under a minute: who built it, and why</div>
@@ -822,7 +851,7 @@
     '2': 'bg-light', '3': 'bg-light',
     '3a': 'bg-light', '3b': 'bg-light',
     '5a': 'bg-light', '5b': 'bg-light',
-    '6': 'bg-close'
+    '6': ''
   };
 
   function applyMotif(config) {
