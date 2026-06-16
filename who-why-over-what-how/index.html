@@ -265,6 +265,8 @@
   .s5-ts       { position: absolute; left: 140px; top: 226px;
                  font-family: 'IBM Plex Mono', monospace; font-weight: 600;
                  font-size: 58px; color: var(--ink-text); }
+  /* On slide 5b (dark stage), the persistent IKEA subject inverts. */
+  .stage:not(.bg-light) .s5-ts { color: var(--paper); }
   .s5-creator  { position: absolute; left: 144px; top: 318px; font-size: 30px;
                  font-weight: 500; color: var(--slate-light); }
   /* lineage row removed — IKEA callback uses only the founding-context line
@@ -280,14 +282,14 @@
   .s5-head     { position: absolute; left: 140px; top: 502px;
                  font-family: 'Fraunces', serif; font-size: 82px; line-height: 1.02; }
   .s5a-head    { font-weight: 600; color: var(--slate-light); }
-  .s5b-head    { font-weight: 900; color: var(--ink-text); }
+  .s5b-head    { font-weight: 900; color: var(--paper); }
   .s5b-head .hl { color: var(--amber); }
   .s5a-gloss   { position: absolute; left: 140px; top: 730px;
                  font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
                  font-size: 34px; line-height: 1.4; color: var(--slate-light); }
   .s5b-quote   { position: absolute; left: 140px; top: 730px; width: 1500px;
                  font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
-                 font-size: 34px; line-height: 1.3; color: var(--ink-text); }
+                 font-size: 34px; line-height: 1.3; color: var(--paper); }
   .s5-attr     { position: absolute; left: 140px; top: 970px;
                  font-family: 'IBM Plex Mono', monospace; font-weight: 500;
                  font-size: 22px; letter-spacing: 0.06em; }
@@ -796,7 +798,7 @@
   </section>
 
   <!-- ===== Slide 5b — IKEA correction (lower zone only) ===== -->
-  <section class="slide light" data-slide="5b">
+  <section class="slide dark" data-slide="5b">
     <div class="s5-lbl s5b-lbl">Actually</div>
     <div class="s5-head s5b-head">Meet people <span class="hl">where they are.</span></div>
     <div class="s5b-quote">&ldquo;We have decided once and for all to side with the many.&rdquo;</div>
@@ -850,7 +852,7 @@
     '1a': '', '1b': '', '1': '', '4': '',       // dark
     '2': 'bg-light', '3': 'bg-light',
     '3a': 'bg-light', '3b': 'bg-light',
-    '5a': 'bg-light', '5b': 'bg-light',
+    '5a': 'bg-light', '5b': '',
     '6': ''
   };
 
