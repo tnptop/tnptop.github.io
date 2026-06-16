@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Who/Why · Flashcards</title>
+<style>
+  :root {
+    --paper: #F4F1EA;
+    --ink:   #1B2233;
+    --amber: #E6A23C;
+    --slate: #6E7689;
+    --rule:  rgba(27, 34, 51, 0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--paper); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Sukhumvit Set', 'Sarabun', 'Helvetica Neue', sans-serif;
+    overscroll-behavior: none;
+  }
+  body {
+    display: flex; flex-direction: column;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  header {
+    flex: 0 0 auto;
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .badge {
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+    font-weight: 600; font-size: 17px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--amber);
+  }
+  .counter {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-size: 15px; color: var(--slate);
+  }
+  main {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 22px 20px 24px;
+  }
+  .card p {
+    margin: 0 0 18px;
+    font-size: 23px;
+    line-height: 1.55;
+    font-weight: 400;
+  }
+  .card p:last-child { margin-bottom: 0; }
+  .card p.hero {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1.3;
+    color: var(--ink);
+    padding: 8px 0;
+  }
+  .card p.hero .accent { color: var(--amber); }
+  footer {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px 14px 16px;
+    border-top: 1px solid var(--rule);
+    background: var(--paper);
+  }
+  button {
+    appearance: none; border: none;
+    background: var(--ink); color: var(--paper);
+    font: inherit; font-weight: 600; font-size: 20px;
+    padding: 18px 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: opacity 0.12s ease, transform 0.08s ease;
+    touch-action: manipulation;
+  }
+  button:active { transform: scale(0.97); }
+  button[disabled] { opacity: 0.28; }
+  button .arrow {
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    font-weight: 400; opacity: 0.7;
+  }
+  .progress {
+    height: 3px; background: var(--rule);
+    overflow: hidden;
+  }
+  .progress > span {
+    display: block; height: 100%; background: var(--amber);
+    transition: width 0.2s ease;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="badge" id="badge">Slide 1</div>
+    <div class="counter"><span id="cur">1</span> / <span id="tot">13</span></div>
+  </header>
+  <div class="progress"><span id="bar"></span></div>
+  <main>
+    <div class="card" id="card"></div>
+  </main>
+  <footer>
+    <button id="prev"><span class="arrow">←</span> ก่อนหน้า</button>
+    <button id="next">ถัดไป <span class="arrow">→</span></button>
+  </footer>
+
+<script>
+  const cards = [
+    {
+      label: 'Slide 1',
+      paragraphs: [
+        'สวัสดีครับ (ขอบคุณ speakers ก่อนหน้า)',
+        'วันนี้ sharing session ของพวกเรา leogod กับ skynet มาด้วย theme คนเนอะ เพื่อนร่วมงาน กับตัวเราเอง',
+        'ผมอยากจะพูดถึงคนกลุ่มนึง ที่เราไม่รู้จัก แต่กลับมีอิทธิพลกับงานที่เราทำ ผ่านเครื่องมือที่พวกเขาเหล่านั้นสร้าง ผ่านตัวอย่างประสบการณ์นึงที่เพิ่งเกิดขึ้นกับผมครับ',
+        'หลายๆ คนน่าจะเคยได้ยินชื่อ openclaw กันมาผ่านๆ ใช่ไหมครับ อย่างในห้องนี้เองก็มีคนที่เคยใช้ เช่นพี่บรีส พี่เท้ง',
+        'ส่วนตัวผมรู้จักกับ openclaw ตั้งแต่สมัยที่มันชื่อ clawd กับ moltbot ละครับ แค่ยังไม่ได้ลองมันจริงจังเท่าไหร่'
+      ]
+    },
+    {
+      label: 'Slide 1a',
+      paragraphs: [
+        'ช่วงต้นมีนา ผมมีโอกาสได้ไป openclaw meetup มาครับ เห็นอะไรน่าสนใจมาหลายอย่างเลย จบจากงานมาก็ไฟลุก ลองมันทุกอย่าง',
+        'แต่หนึ่งเดือนผ่านไป ปรากฏว่าผมกลับไฟมอดแฮะ คือสิ่งที่ผมได้ฟังมา มันไม่ได้ตอบโจทย์กับสิ่งที่ผมอยากได้จาก AI agent ครับ',
+        'ช่วงที่ไฟมอด ๆ อยู่ ผมไถ twitter เล่น ๆ ไปเจอกับ nanoclaw ที่เขา claim ว่า มันคือ openclaw ตัวจิ๋วที่ขุมพลังพอ ๆ กัน ผมก็เอ๊ะเบา ๆ แล้วลองไปหาดูว่ามันคืออะไรครับ',
+        'ระหว่างที่กำลัง research อยู่ ผมไปสะดุดตากับประโยคนี้เข้า'
+      ]
+    },
+    {
+      label: 'Slide 1b',
+      paragraphs: [
+        'Openclaw เนี่ยมันเป็น project ที่เจ๋งมากนะ แต่ผมข่มตานอนไม่ลงแน่ ถ้าผมให้ software ที่ซับซ้อนขนาดนี้ เข้าถึงทุกอย่างในชีวิตผมได้ทั้ง ๆ ที่ผมยังไม่เข้าใจมันดี',
+        'ประโยคนี้มันกระตุ้นต่อมเอ๊ะผมมากเลย เลยต้องไปดูว่า คนสร้าง nanoclaw เนี่ยเขาเป็นใครมาจากไหน พอได้อ่าน blog ที่อธิบายที่มาที่ไป ผมย้ายค่ายเลย'
+      ]
+    },
+    {
+      label: 'Slide 1 · reprise',
+      paragraphs: [
+        'สิ่งที่ทำให้ผมเปลี่ยน ไม่ใช่เพราะผมรู้ว่า nanoclaw มันทำอะไรได้มาก (หรือน้อย) กว่า openclaw ครับ มันคือ 1 ประโยคเมื่อกี๊ ที่มันตรงกับสิ่งที่ผมกำลังตามหา เหตุผลนั่น คืออีกครึ่งนึงของภาพเต็ม',
+        { hero: true, text: 'Who / Why <span class="accent">over</span> What / How' },
+        'จั่วหัวมาแบบนี้ ผมไม่ได้บอกว่า who why มันเหนือกว่า what how นะครับ ผมกำลังจะสื่อว่า what how เนี่ยมันเป็นแค่ครึ่งนึงของภาพที่เราเห็น และเราก็มักจะหยุดกันแค่นี้ซะด้วยสิ',
+        'เครื่องมือตัวนึงเนี่ย มันมีที่มาที่ไปนะครับว่าทำไมมันถึงถูกสร้างมา แล้วทำไมถึงสร้างออกมาแบบนี้ ซึ่ง who why คืออีกครึ่งที่เหลือที่อธิบายสิ่งเหล่านั้นครับ',
+        'ยกตัวอย่างพี่บรีสละกัน ตอนนี้พี่เขาไม่ได้ใช้ openclaw แล้วนะครับ เขาสร้าง tool ของตัวเองขึ้นมาที่ชื่อ pantheon (แอบ spoil เล็กน้อย) เพราะสิ่งที่ openclaw เป็น ไม่ตอบโจทย์ ไม่ตอบ why ของ use case AI agent พี่เขาแล้ว',
+        'อีกตัวอย่างนึงสำหรับชาว dev ครับ JavaScript น่าจะรู้กันดีกว่า เวลาจะเปรียบเทียบอะไร เราต้องใช้เครื่องหมายเท่ากับสามตัวนะ เลี่ยงเท่ากับสองตัว แต่รู้กันไหมครับว่า ทำไมมันถึงมีเท่ากับสองตัว ในปี 1995 Brendan Eich เนี่ยสร้างภาษาโปรแกรมตัวนึงขึ้นมาให้ designer ใช้ เพื่อไม่ให้ designer ต้องมานั่งเครียดกับระบบ type และ web สมัยนั้นเป็น text เน้น ๆ coercion เลยจำเป็นครับ',
+        'ประเด็นคือ การที่เรารู้ why ของ tool ต่าง ๆ เนี่ย มันจะทำให้เราเลือกของที่เราจะเอามาใช้ได้ตรงกับความต้องการของเราครับ',
+        { hero: true, text: 'In the AI era, knowing <span class="accent">humans</span> matters more than ever' },
+        'ยุคที่ AI ครองเมือง ยุคที่เราเสกอะไรออกมาก็ได้เนี่ยครับ การที่เรารู้จักคนเบื้องหลังเครื่องมือ มันมีความหมายมาก ๆ เลยนะครับ'
+      ]
+    },
+    {
+      label: 'Slide 2',
+      paragraphs: [
+        'ลองนึกภาพเวลาเรากำลังเลือกซื้อ หรือเลือกใช้อะไรซักอย่างดู แวบแรกเราจะทำอะไรบ้างครับ อ่าน spec อ่าน review ถามเพื่อน ๆ คนรอบข้างเนอะ ว่าอะไรดี อะไรดัง',
+        'ซึ่งมันไม่ได้ผิดอะไรนะครับ แต่เรา research แค่ครึ่งนึงของภาพ และถ้าเราหยุดแค่นี้ เราจะยอมรับกับข้อจำกัด tradeoff อะไรบางอย่างที่เราไม่ได้ตั้งใจจะเลือกมัน'
+      ]
+    },
+    {
+      label: 'Slide 3',
+      paragraphs: [
+        'อย่าง openclaw กับ nanoclaw ถ้าดูแค่ความนิยมกับคำโฆษณาเนี่ย openclaw ชนะแบบไม่ต้องสงสัยเลยครับ คนกด like ต่างกันสิบเท่าได้แหน่ะ แถมยังใช้ effort ในการติดตั้งเท่ากันอีกต่างหาก',
+        'ก่อนที่ผมจะพาไปดูว่าผมค้นหา who กับ why ของสอง tool นี้ยังไง ผมขอแปะ disclaimer นิดนึงครับว่าหลาย ๆ คนอาจจะไม่เคยเห็นสิ่งที่ผมจะ show บน presentation นะครับ คิดซะว่าเหมือนกับเรากดดูของใน shopee แล้วเข้าไปดูว่าร้านที่ขายของชิ้นนี้ เป็นใครมาจากไหนละกัน'
+      ]
+    },
+    {
+      label: 'Slide 3a',
+      paragraphs: [
+        'เริ่มที่ openclaw อ่ะเรา google จะเห็นว่า search แค่นี้ยังไม่เจอนะครับว่าใครเป็นคนสร้าง',
+        'ผมก็เข้าไปดูที่ readme บน github เลื่อน ๆ ลงมา เจอละว่า openclaw สร้างมาเพื่อ molty โดย Peter Steinberger และ community',
+        'อ่าว แล้ว molty นี้ใคร ผมก็กดเข้าไปดูใน molty.me อ่ะเจอแล้วว่า molty คือ AI ส่วนตัวของ peter',
+        'พูดง่าย ๆ ก็คือ Peter สร้าง openclaw มาเป็นแขนขาให้กับ molty ครับ'
+      ]
+    },
+    {
+      label: 'Slide 3b',
+      paragraphs: [
+        'ตัดภาพมาที่ nanoclaw ผมก็เริ่มที่ google เหมือนกัน และก็ไม่เจอว่าใครเป็นคนสร้างเหมือนกัน',
+        'อ่ะลองเข้าไปดูที่ github หน่อย เปิดมาด้วยประโยคที่ผมเอ๊ะเลย แต่ก็ยังไม่เจอชื่อคนอยู่ดี แต่เขาเขียน readme เป็น first-person นะ',
+        'งั้นลองไปดูที่เว็บ nanoclaw มันก็คือ landing page ทั่ว ๆ ไป แต่ก็ยังไม่เจอชื่อคนสร้างอยู่ดี',
+        'จนผมต้องกดไปดู blog แล้วเลื่อนไปอ่าน Don’t Trust AI agents ถึงจะเจอชื่อคนสร้าง nanoclaw ครับ gavriel cohen ซึ่งเขาเขียน why ไว้ชัดเจนมากเลย',
+        'ผมมั่นใจมากว่า ชื่อของสองคนนี้ คนที่เคยได้ยินน่าจะมีน้อยมาก ๆ ในห้องนี้ครับ ซึ่งก่อนที่ผมจะค้นผมก็เป็นหนึ่งในนั้นครับ',
+        'นี่คือสิ่งที่เกิดขึ้นแทบจะทุกครั้งที่เราเลือกใช้อะไรบางอย่าง เรามักจะไม่รู้ว่าใครเป็นคนสร้างมันขึ้นมา'
+      ]
+    },
+    {
+      label: 'Slide 3 · reprise',
+      paragraphs: [
+        'พอเรารู้แล้วว่า ใครเป็นคนสร้าง แล้วเขาเจอปัญหาอะไร มีความต้องการยังไง บริบท ณ เวลาที่เขาสร้างเครื่องมือพวกนี้เป็นแบบไหน ภาพที่เราเห็นก็จะชัดขึ้นแล้วครับ',
+        'มาฟังจากปากของเจ้าตัวกันดีกว่าครับว่า ทั้งสองคน พูดถึง tool ที่เขาสร้างไว้ยังไงบ้าง'
+      ]
+    },
+    {
+      label: 'Slide 4',
+      paragraphs: [
+        'Peter ต้องการ AI ที่ใช้ชีวิตอยู่ในที่ ๆ เขาทำงาน เพื่อให้มันทำงานให้กับเขา ไม่ใช่แค่คุยโต้ตอบได้อย่างเดียว ทำให้ tool ที่เขาสร้าง ต้องรู้จักและครอบคลุมทุกสิ่งทุกอย่างที่เขาสร้างมาครับ',
+        'ส่วน Gavriel เนี่ยเขาต้องการที่จะตรวจสอบ และเข้าใจหลักการทำงานทั้งหมด เลยเอาไอเดียของ openclaw มาทำให้มันเล็กพอที่คนคนนึงจะเข้าใจมันได้ครับ',
+        'Why ของสองคนนี้ไม่มีถูกไม่มีผิดนะครับ เพราะมันมาจากความต้องการจริง ๆ ซึ่งถ้าเราจะเลือก 1 ใน 2 ตัวนี้เนี่ย คำถามที่ควรถามคือ context ของผู้สร้างคนไหน มันคล้องจอง เหมาะสม กับเรามากกว่าครับ'
+      ]
+    },
+    {
+      label: 'Slide 5a',
+      paragraphs: [
+        'ผมขอยกอีกตัวอย่างนึงของ who why ที่หลาย ๆ คนน่าจะไม่รู้ว่า ที่มาที่ไปมันเป็นแบบนี้จริง ๆ เป็นยังไงกันครับ',
+        { hero: true, text: 'IKEA' },
+        'ภาพจำที่เรามีกับอิเกียเป็นยังไงกันบ้างครับ ราคาถูก ซื้อเป็นกล่อง ๆ แล้วเราขนกลับมาประกอบเองที่บ้าน',
+        'เห็นแค่นี้ เราก็พูดได้เนอะว่าไอเดียมันคือความเข้าถึงง่าย กดราคาด้วยการตัดขั้นตอนประกอบ กับขนส่งออกไป',
+        'แต่นั่นก็เป็นเพียงแค่ครึ่งนึงของภาพเต็มครับ'
+      ]
+    },
+    {
+      label: 'Slide 5b',
+      paragraphs: [
+        'ย้อนกลับไปปี 1976 Ingvar Kamprad ผู้ก่อตั้งอิเกียได้เขียน manifesto ที่บริษัทยึดถือเป็นเข็มทิศนำทางไว้จนถึงทุกวันนี้ ว่า เราตัดสินใจอย่างแน่วแน่ ว่าเราเลือกอยู่ข้างคนส่วนใหญ่ แล้วทำไมเขาถึงเขียนประโยคนี้ขึ้นมาล่ะ',
+        'อิเกียถูกก่อตั้งมาในปี 1943 ซึ่งเป็นช่วงสงครามโลกครั้งที่ 2 ครับ บ้านที่ชาวบ้านทั่วไปในสวีเดนอยู่มักจะเป็นตึกเล็ก ๆ แคบ ๆ บันไดที่ถ้าเดินไม่ระวังก็จะสะดุดล้ม รถที่ขับก็ขนาดจิ๋ว',
+        'ด้วยสถานการณ์แบบนั้น ทำยังไงให้คนซื้อ furniture กับเราดีล่ะ คำตอบง่าย ๆ ก็คงเป็น ทำ marketing เยอะ ๆ เนอะ',
+        'แต่อิเกีย เลือกที่จะ มาพบกันครึ่งทาง ครับ รถไม่ใหญ่พอใช่ไหม ก็แยกชิ้นส่วนเป็นกล่อง ๆ ซะสิ ไม่ต้องจ้างขนส่ง แบกขึ้นบันไดก็ง่าย แถมสร้าง sense ของความเป็นเจ้าของ furtuniture ผ่านการที่เราต้องประกอบเองด้วย',
+        'ด้วยความสำเร็จนั้น และพันธกิจของ ikea ที่ต้องการจะทำ furniture ให้เข้าถึงคนให้ได้มากที่สุด Kamprad ก็เขียนประโยคนี้ขึ้นมาอีกครับ เป็นประโยคที่ทุก ๆ คำถามว่าทำไม มันจะพามาถึงคำตอบนี้ why ของ ikea why ของ Kamprad'
+      ]
+    },
+    {
+      label: 'Slide 6',
+      paragraphs: [
+        'ผมเข้าใจนะครับว่า เราไม่ได้มีเวลาที่จะนั่ง research ทุกสิ่งอย่างที่เราใช้ และมันก็ไม่ใช่ว่าจะหา who why กันได้ง่าย ๆ ด้วย',
+        'แต่สิ่งที่ผมอยากจะสื่อ คือ เรา research เพื่อหา alignment ครับ เมื่อเราเข้าใจในปัญหาและบริบทของมันที่ผู้สร้างต้องการแก้ เราจะเลือกใช้เครื่องมือที่มันเข้ากับความตั้งใจของเรา และไม่มานั่งเสียใจภายหลังว่าเราไม่ได้ทำการบ้านมาดีพอที่จะเข้าใจข้อจำกัดที่เราไม่ได้เตรียมใจจะรับมัน'
+      ]
+    }
+  ];
+
+  const STORAGE_KEY = 'wwhw-flashcard-idx';
+  const badge = document.getElementById('badge');
+  const cur = document.getElementById('cur');
+  const tot = document.getElementById('tot');
+  const card = document.getElementById('card');
+  const bar = document.getElementById('bar');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+
+  let idx = 0;
+  try {
+    const saved = parseInt(localStorage.getItem(STORAGE_KEY) ?? '0', 10);
+    if (Number.isFinite(saved) && saved >= 0 && saved < cards.length) idx = saved;
+  } catch (e) { /* localStorage may be unavailable */ }
+
+  tot.textContent = cards.length;
+
+  function render() {
+    const c = cards[idx];
+    badge.textContent = c.label;
+    cur.textContent = idx + 1;
+    bar.style.width = (((idx + 1) / cards.length) * 100) + '%';
+    card.innerHTML = c.paragraphs.map(p => {
+      if (typeof p === 'string') {
+        return '<p>' + p + '</p>';
+      }
+      return '<p class="hero">' + p.text + '</p>';
+    }).join('');
+    prev.disabled = (idx === 0);
+    next.disabled = (idx === cards.length - 1);
+    document.querySelector('main').scrollTop = 0;
+    try { localStorage.setItem(STORAGE_KEY, String(idx)); } catch (e) {}
+  }
+
+  function go(delta) {
+    const target = idx + delta;
+    if (target < 0 || target >= cards.length) return;
+    idx = target;
+    render();
+  }
+
+  prev.addEventListener('click', () => go(-1));
+  next.addEventListener('click', () => go(1));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') go(-1);
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  });
+
+  render();
+</script>
+</body>
+</html>
