@@ -299,15 +299,10 @@
   /* ===========================================================
      Slide 6 — close (gradient bg, three mantra lines)
      =========================================================== */
-  /* Slide 6 — audience photo as full-bleed bg, dark gradient overlay
-     for text legibility. Fallback background-color shows if the photo
-     file is missing (lets the deck still render before the day-of
-     photo push). Filename includes the date for cache-busting: change
-     both the filename here AND the file in img/ each session. */
-  .s6 { background-color: var(--ink);
-        background-image: linear-gradient(180deg, rgba(15,22,41,0.35) 0%, rgba(15,22,41,0.85) 100%),
-                          url('img/audience-20260605.jpg');
-        background-size: cover; background-position: center; }
+  /* Slide 6 — audience photo as full-bleed bg, no overlay (mirror
+     moment: voice carries the close, photo carries the visual).
+     Fallback background-color shows if the photo file is missing. */
+  .s6 { background: #161B27 url('img/room.jpg') center/cover no-repeat; }
   .s6-eyebrow  { position: absolute; left: 140px; top: 690px; font-size: 22px;
                  color: var(--amber); opacity: 0.85;
                  font-family: 'IBM Plex Mono', monospace; font-weight: 500;
