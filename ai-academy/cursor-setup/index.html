@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Cursor Setup Walkthrough</title>
+<style>
+/* Colours. Light theme by default, dark variant below. */
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #555b66;
+  --accent: #0a58d0;
+  --accent-fg: #ffffff;
+  --note-bg: #eef3fb;
+  --warn-bg: #fff6e5;
+  --warn-line: #a86400;
+  --line: #d4d7dc;
+  --bar-bg: #f6f7f9;
+  --code-bg: #eceef2;
+  --bar-h: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14161a;
+    --fg: #ececec;
+    --muted: #a7adb8;
+    --accent: #6ea4ff;
+    --accent-fg: #0b0d10;
+    --note-bg: #1c2431;
+    --warn-bg: #2a2317;
+    --warn-line: #e3a647;
+    --line: #3d424b;
+    --bar-bg: #1b1e23;
+    --code-bg: #252a32;
+  }
+}
+
+/* Base */
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+h1 { font-size: 2.3em; line-height: 1.15; margin: 0 0 0.6em; }
+h2 { font-size: 1.6em; line-height: 1.2; margin: 0 0 0.6em; }
+p { margin: 0 0 0.8em; }
+ol, ul { margin: 0 0 0.8em; padding-left: 1.5em; }
+li { margin: 0.35em 0; }
+code {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* System versions: the script sets data-os on <html>. Elements for the other system are hidden. */
+html[data-os="mac"] [data-os="windows"], html[data-os="windows"] [data-os="mac"] { display: none !important; }
+
+/* Slide area: fills the viewport above the bottom bar */
+#deck { position: fixed; top: 0; left: 0; right: 0; bottom: var(--bar-h); }
+.slide {
+  display: none;
+  box-sizing: border-box;
+  height: 100%;
+  padding: 28px max(16px, 3vw);
+  gap: 32px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+.slide.active { display: grid; }
+.slide.no-image { grid-template-columns: minmax(0, 1fr); }
+.text { min-width: 0; max-height: 100%; overflow-y: auto; align-self: center; }
+.no-image .text { width: 100%; max-width: 860px; justify-self: center; }
+.label {
+  font-size: 0.8em;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4em;
+}
+.hint { color: var(--muted); }
+
+/* Image on the right, scaled to fit */
+.media { margin: 0; min-width: 0; min-height: 0; height: 100%; }
+.media.pair { display: grid; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.zoom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.zoom img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+/* Callouts */
+.callout {
+  background: var(--note-bg);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin: 14px 0;
+  font-size: 0.92em;
+}
+.callout.warn { background: var(--warn-bg); border-left-color: var(--warn-line); }
+.callout strong { display: block; margin-bottom: 4px; }
+.callout p:last-child { margin-bottom: 0; }
+
+/* Prompt text with Copy button */
+.prompt-box {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--code-bg);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 8px 0;
+}
+.prompt-box code { flex: 1; background: none; padding: 0; }
+
+/* Checklist */
+.checklist { list-style: none; padding: 0; }
+.checklist label { display: flex; gap: 12px; align-items: flex-start; padding: 6px 0; cursor: pointer; }
+.checklist input {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 2px 0 0;
+  accent-color: var(--accent);
+}
+
+/* Buttons */
+.btn {
+  font: inherit;
+  font-size: 17px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+}
+.btn.secondary { background: transparent; color: var(--accent); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+#choose-os .btn { margin: 0 10px 10px 0; }
+
+/* Bottom bar with progress */
+.bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--bar-h);
+  box-sizing: border-box;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bar-bg);
+  border-top: 1px solid var(--line);
+}
+.bar .spacer { flex: 1; }
+.progress { position: absolute; top: -1px; left: 0; height: 4px; background: var(--accent); width: 0; }
+#counter { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Contents list */
+#contents {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--bar-h) + 8px);
+  width: min(440px, calc(100vw - 32px));
+  max-height: calc(100vh - var(--bar-h) - 24px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+}
+#contents ol { list-style: none; margin: 0; padding: 0; }
+#contents li { margin: 0; }
+#contents button {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: 16px;
+  color: var(--fg);
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+#contents button:hover { background: var(--code-bg); }
+#contents button[aria-current] { background: var(--note-bg); font-weight: 600; }
+
+/* Lightbox: full size image on a dark overlay */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+  cursor: zoom-out;
+}
+#lightbox[hidden] { display: none; }
+#lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* Narrow screens: text above image, page scrolls */
+@media (max-width: 799px) {
+  body { font-size: 18px; }
+  h1 { font-size: 1.8em; }
+  h2 { font-size: 1.35em; }
+  #deck { overflow-y: auto; }
+  .slide {
+    height: auto;
+    min-height: 100%;
+    padding: 20px 16px;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+  }
+  .text { max-height: none; overflow: visible; align-self: start; }
+  .media, .zoom { height: auto; }
+  .zoom img { max-height: 70vh; }
+  .bar { padding: 0 8px; gap: 6px; }
+  .btn { padding: 8px 12px; }
+}
+
+/* Print: all slides stacked, one per page, no buttons */
+@media print {
+  #deck { position: static; }
+  .bar, #contents, #lightbox { display: none; }
+  #choose-os, #choose-os.active { display: none; }
+  .slide, .slide.active {
+    display: grid;
+    height: auto;
+    page-break-after: always;
+    break-after: page;
+  }
+  .text { max-height: none; overflow: visible; }
+  .zoom img { max-height: 15cm; }
+  .media.pair .zoom img { max-height: 6cm; }
+  .prompt-box .btn { display: none; }
+}
+</style>
+</head>
+<body>
+<main id="deck">
+
+<section class="slide no-image" id="choose-os">
+  <div class="text">
+    <h2>Choose your system</h2>
+    <p>This page has steps for macOS and for Windows. Click the button for your laptop.</p>
+    <p>
+      <button class="btn" type="button" data-choose="mac">macOS</button>
+      <button class="btn" type="button" data-choose="windows">Windows</button>
+    </p>
+  </div>
+</section>
+
+<section class="slide no-image active">
+  <div class="text">
+    <p class="label"></p>
+    <h1>Set up Cursor and run your first Agent prompt</h1>
+    <p data-os="mac">Checked on: Cursor 3.24.9, macOS 15.8.1 (Apple Silicon), 2026-10-09.</p>
+    <p data-os="windows">Checked on: Cursor 3.24.9, Windows 11, 2026-10-09.</p>
+    <p>Time: about 20 minutes.</p>
+    <p>Do these steps before the session.</p>
+    <p class="hint">Press the right arrow key or click Next.</p>
+  </div>
+</section>
+
+<section class="slide no-image">
+  <div class="text">
+    <p class="label"></p>
+    <h2>What you need</h2>
+    <ul>
+      <li>A Mac or a Windows laptop.</li>
+      <li>Your work Google account. This is the account of your work email. You sign up to Cursor with it in Step 2.</li>
+      <li>About 300 megabytes (MB) of free disk space for the download.</li>
+      <li>A stable internet connection and about 20 minutes.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="slide no-image">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 1: Download Cursor</h2>
+    <ol>
+      <li>Open <code>cursor.com/home</code> in your browser. Type the full address, with <code>/home</code>.</li>
+      <li>Click the download button for your system. The browser downloads one file.</li>
+    </ol>
+    <ul>
+      <li data-os="mac">macOS: the file name ends in <code>.dmg</code>. The file is about 300 MB.</li>
+      <li data-os="windows">Windows: the file name is <code>CursorUserSetup-x64-3.24.9.exe</code>. The file is about 205 MB.</li>
+    </ul>
+    <div class="callout">
+      <strong>Why /home</strong>
+      <p>If you already have a Cursor account, <code>cursor.com</code> opens <code>cursor.com/agents</code> instead of the download page. The address <code>cursor.com/home</code> always shows the download button.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 1: Install on macOS</h2>
+    <ol start="3">
+      <li>Open the downloaded file. A window shows the Cursor icon, an arrow, and an <b>Applications</b> folder.</li>
+      <li>Drag the Cursor icon onto the <b>Applications</b> folder. Wait until the copy finishes.</li>
+      <li>Open Cursor from your <b>Applications</b> folder.</li>
+      <li>If macOS asks to allow notifications from Cursor, choose either option. It does not change these steps.</li>
+    </ol>
+    <div class="callout warn">
+      <strong>No admin rights</strong>
+      <p>Do not run install commands that ask for admin rights or an elevated account. If the installer asks for that, stop and ask a helper.</p>
+    </div>
+  </div>
+  <figure class="media"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/01-install-dmg.png" alt="Cursor Installer window: the Cursor icon, an arrow, and the Applications folder"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 1: Install on Windows</h2>
+    <ol start="3">
+      <li>Open the downloaded file. A window titled "Setup - Cursor (User)" opens. It shows the <b>License Agreement</b> screen.</li>
+      <li>Select <b>I accept the agreement</b>. Click <b>Next</b>.</li>
+      <li>Click <b>Next</b> on each of the next three screens: "Select Destination Location", "Select Start Menu Folder", and "Select Additional Tasks". Do not change the settings.</li>
+      <li>On the "Ready to Install" screen, click <b>Install</b>. Wait until the green bar is full. This takes about 1 minute.</li>
+      <li>On the "Completing the Cursor Setup Wizard" screen, keep <b>Launch Cursor</b> selected. Click <b>Finish</b>. Cursor opens.</li>
+    </ol>
+  </div>
+  <figure class="media pair">
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/21-windows-license.png" alt="Setup window, License Agreement screen: the option I accept the agreement is selected; the buttons Next and Cancel are at the bottom"></button>
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/27-windows-finish.png" alt="Setup window, Completing the Cursor Setup Wizard screen: the checkbox Launch Cursor is selected; the button Finish is at the bottom"></button>
+  </figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 2: Click Sign Up</h2>
+    <p>Cursor opens a window with the Cursor logo, the text "The best way to code with AI", and two buttons: <b>Log In</b> and <b>Sign Up</b>.</p>
+    <ol>
+      <li>Click <b>Sign Up</b>. Your browser opens a page titled "Welcome to Cursor".</li>
+    </ol>
+    <p>If you already have a Cursor account, click <b>Log In</b> instead and sign in with it.</p>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/02-first-launch.png" alt="Cursor first launch: the Cursor logo, the text The best way to code with AI, and the buttons Log In and Sign Up"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/29-windows-first-launch.png" alt="Cursor first launch: the Cursor logo, the text The best way to code with AI, and the buttons Log In and Sign Up"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 2: Continue in the browser</h2>
+    <p>The browser may show a small window "Sign up to Cursor". Click <b>Continue to sign up</b>.</p>
+    <p>The browser then shows the page "Welcome to Cursor".</p>
+  </div>
+  <figure class="media"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/28-signup-dialog.png" alt="Browser window Sign up to Cursor with the buttons Cancel and Continue to sign up"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 2: Sign up with Google</h2>
+    <ol start="2">
+      <li>Click the <b>Google</b> button. It is the first button at the top, with the letter G.</li>
+      <li>Google asks which account to use. Choose your work account. Do not choose a personal account.</li>
+      <li>Follow the steps from Google until the browser says you are signed in.</li>
+    </ol>
+    <p>You do not need the fields <b>First name</b>, <b>Last name</b>, and <b>Email</b>.</p>
+  </div>
+  <figure class="media"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/03-signup-page.png" alt="Browser page Welcome to Cursor: five provider buttons, with the Google button first, then First name, Last name, Email, and a Continue button"></button></figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 2: Finish in the browser</h2>
+    <p>The browser may show a small window "Sign in to Cursor". Click <b>Continue to sign in</b>.</p>
+    <ol start="5">
+      <li>If the browser shows extra offers or questions, choose <b>Maybe later</b>.</li>
+      <li>Go back to the Cursor window.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/04-signin-dialog.png" alt="Browser window Sign in to Cursor with the buttons Cancel and Continue to sign in"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 2: Finish in the browser</h2>
+    <p>The browser may show a small window "Sign in to Cursor desktop" with your name and your email. Click <b>Sign in</b>.</p>
+    <p>The window can also read "Sign in to Cursor". Then click <b>Continue to sign in</b>.</p>
+    <ol start="5">
+      <li>The browser then shows a page that starts with "All set". Click <b>Return to Cursor</b>.</li>
+      <li>If the browser shows extra offers or questions, choose <b>Maybe later</b>.</li>
+      <li>Go back to the Cursor window.</li>
+    </ol>
+  </div>
+  <figure class="media pair" data-os="windows">
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/30-windows-signin-dialog.png" alt="Browser window Sign in to Cursor desktop: an account card with the name and the email hidden, and the buttons Cancel and Sign in"></button>
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/31-windows-all-set.png" alt="Browser page with the text All set, Feel free to return to Cursor, and the button Return to Cursor"></button>
+  </figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 3: Question 1 of 3</h2>
+    <ol>
+      <li>Screen "Tell us about your role": click <b>Software engineer</b>.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/05-role.png" alt="Screen Tell us about your role with nine tiles. Software engineer is the first tile."></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/32-windows-role.png" alt="Screen Tell us about your role with nine tiles. Software engineer is the first tile."></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 3: Question 2 of 3</h2>
+    <ol start="2">
+      <li>Screen "What brings you to Cursor today?": click <b>Coding</b>.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/06-coding.png" alt="Screen What brings you to Cursor today? with two cards: Coding and Tasks"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/33-windows-coding.png" alt="Screen What brings you to Cursor today? with two cards: Coding and Tasks"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 3: Question 3 of 3</h2>
+    <ol start="3">
+      <li>Screen "Here are a few ways to get started": click <b>Skip</b> below the three cards.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/07-get-started-skip.png" alt="Screen Here are a few ways to get started with three cards and a Skip link below them"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/34-windows-get-started-skip.png" alt="Screen Here are a few ways to get started with three cards and a Skip link below them"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 3: The home window</h2>
+    <p>Cursor shows "Getting things ready" for a few seconds. Then it opens the <b>Cursor Agents</b> window. This is the home window.</p>
+    <p>It has a prompt box in the middle with the grey text "Plan, Build, / for skills, @ for context".</p>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/09-agents-home.png" alt="Cursor Agents home window: a prompt box with the text Plan, Build, / for skills, @ for context; the pickers Start from scratch and This Mac; the model Cursor Grok 4.6 Medium; an IDE button at the top right"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/35-windows-agents-home.png" alt="Cursor home window on Windows: a menu bar with File, Edit, View, Help; a prompt box with the text Plan, Build, / for skills, @ for context; the pickers Start from scratch and This PC; the model Cursor Grok 4.6 Medium; an IDE button at the top right"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 4: Open the folder menu</h2>
+    <p data-os="mac">Above the prompt box are two small pickers: <b>Start from scratch</b> and <b>This Mac</b>.</p>
+    <p data-os="windows">Above the prompt box are two small pickers: <b>Start from scratch</b> and <b>This PC</b>.</p>
+    <ol>
+      <li>Click <b>Start from scratch</b>. A menu opens.</li>
+      <li>Click <b>New Folder</b> at the bottom of the menu. A window opens. You name the folder in this window.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/10-start-picker.png" alt="The Start from scratch menu is open: On This Mac, Remote, Start from scratch, Use Existing..., and New Folder"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/36-windows-start-picker.png" alt="The Start from scratch menu is open: On This PC, Remote, Start from scratch, Use Existing..., and New Folder"></button></figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 4: Name the folder</h2>
+    <ol start="3">
+      <li>In <b>Save As</b>, type <code>ai-academy-test</code>.</li>
+      <li>Leave <b>Where</b> as it is. It points to your home folder.</li>
+      <li>Click <b>Create</b>.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/11-new-folder.png" alt="Save window with Save As, Tags, Where, and the buttons Cancel and Create"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 4: Name the folder</h2>
+    <p>The window title is "New Local Git Repo".</p>
+    <ol start="3">
+      <li>In <b>File name</b>, type <code>ai-academy-test</code>.</li>
+      <li>Do not change the location. The window opens in your home folder.</li>
+      <li>Click <b>Create</b>.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/37-windows-new-folder.png" alt="Window New Local Git Repo: the field File name contains ai-academy-test; the buttons Create and Cancel are at the bottom; the file list is blurred"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 4: Check</h2>
+    <p>The picker above the prompt box now reads <b>ai-academy-test</b> and <b>main</b>.</p>
+    <p>On the left, under <b>Repositories</b>, you see <b>ai-academy-test</b> and the text "No agents yet".</p>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/12-folder-created.png" alt="Home window after Create: the picker reads ai-academy-test and main; the left side shows ai-academy-test and No agents yet"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/38-windows-folder-created.png" alt="Home window after Create: the pickers read ai-academy-test, main, and This PC; the left side shows ai-academy-test and No agents yet"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: Send your first Agent prompt</h2>
+    <ol>
+      <li>Click in the prompt box.</li>
+      <li>Type this text:
+        <div class="prompt-box">
+          <code id="prompt-text">Create a file named hello.html that shows the text Hello from Cursor in large letters.</code>
+          <button class="btn secondary" id="copy" type="button" aria-live="polite">Copy</button>
+        </div>
+      </li>
+      <li>Press Enter.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/13-prompt-typed.png" alt="Prompt box with the text: Create a file named hello.html that shows the text Hello from Cursor in large letters."></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/39-windows-prompt-typed.png" alt="Prompt box with the text: Create a file named hello.html that shows the text Hello from Cursor in large letters."></button></figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: What you see</h2>
+    <ul>
+      <li>A chat named "Hello.html file creation" opens. On the right you see <b>Changes</b>, <b>Browser</b>, <b>Terminal</b>, and <b>Files</b>.</li>
+      <li>Cursor shows lines like "Thought briefly", "Edited hello.html", and "Verifying the page renders in the browser". This takes 1 to 3 minutes.</li>
+    </ul>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/14-agent-running.png" alt="Chat Hello.html file creation is running and shows Thought briefly; the right side shows Changes, Browser, Terminal, and Files"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: What you see</h2>
+    <ul>
+      <li>A chat named "Hello.html file creation" opens.</li>
+      <li>Cursor shows lines like "Thinking", "Exploring", and "Edited hello.html". This takes 1 to 3 minutes.</li>
+      <li>A panel can open on the right and show a file. In this picture, the panel shows a script from Claude Code, another AI tool on the same PC. Cursor also reads the setup of other AI tools. Your panel can show other content.</li>
+    </ul>
+  </div>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/40-windows-agent-running.png" alt="Chat Hello.html file creation is running and shows Exploring and Thinking; a panel on the right shows a script file named on-post-tool-use.sh"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: If Cursor asks before it runs something</h2>
+    <p>If a card appears with the buttons <b>Skip</b> and <b>Run</b>, read the text in the card.</p>
+    <p>Click <b>Run</b> if the action stays inside your <code>ai-academy-test</code> folder. Click <b>Skip</b> if it does not.</p>
+    <p>Cursor writes files inside your folder without asking. It asks before it writes outside your folder.</p>
+    <p>In this picture the file is outside the folder, so you click <b>Skip</b>.</p>
+    <div class="callout" data-os="windows">
+      <strong>Windows Security window</strong>
+      <p>Windows can show a window titled "Windows Security" during the Agent run. It asks: "Do you want to allow public and private networks to access this app?" The app is Python. Cursor starts a small web server with Python to check the page. Click <b>Allow</b>. The Agent then continues.</p>
+    </div>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/15-run-or-skip.png" alt="A card asks to create a file outside the folder. It has the buttons Skip and Run and the note This creates a file outside your workspace."></button></figure>
+  <figure class="media pair" data-os="windows">
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/47-windows-run-or-skip.png" alt="Cursor window on Windows with a card in front. The card asks to create a file outside the folder. It has the buttons Skip and Run and the note This creates a file outside your workspace."></button>
+    <button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/41-windows-security.png" alt="Windows Security window: Do you want to allow public and private networks to access this app? The app is Python. The buttons are Allow and Cancel."></button>
+  </figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: When it is done</h2>
+    <ul>
+      <li>At the end, Cursor writes "Created hello.html in the project root" and shows a card "1 File Changed" with <b>hello.html</b>.</li>
+      <li>The bottom bar shows <b>Changes</b> and <b>Create Branch &amp; Commit</b>. You do not need to click them.</li>
+      <li>The model picker in the prompt box shows <b>Cursor Grok 4.6 Medium</b>. Leave it. You can change the model later.</li>
+    </ul>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/16-agent-done.png" alt="Chat is done: Created hello.html in the project root; a card 1 File Changed with hello.html; the bottom bar shows Changes and Create Branch and Commit"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: When it is done</h2>
+    <ul>
+      <li>At the end, Cursor shows a card "1 File Changed" with <b>hello.html</b>.</li>
+      <li>The text above the card can differ from this picture. In this picture, the words "Claimed" and "/park" come from Claude Code, another AI tool on the same PC.</li>
+      <li>The bottom bar shows <b>Changes</b> and <b>Create Branch &amp; Commit</b>. You do not need to click them.</li>
+      <li>The model picker in the prompt box shows <b>Cursor Grok 4.6 Medium</b>. Leave it. You can change the model later.</li>
+    </ul>
+  </div>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/42-windows-agent-done.png" alt="Chat is done: a card 1 File Changed with hello.html; the bottom bar shows Changes and Create Branch and Commit; a panel on the right shows a script file named on-stop.sh"></button></figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: Check the result</h2>
+    <ol>
+      <li>Open Finder.</li>
+      <li>Open your home folder, then the <code>ai-academy-test</code> folder.</li>
+      <li>Double-click <code>hello.html</code>. Your browser opens it and shows "Hello from Cursor" in large letters.</li>
+    </ol>
+    <p>If you see that text, your first Agent prompt works.</p>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/17-hello-browser.png" alt="Browser showing the text Hello from Cursor in large letters"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Step 5: Check the result</h2>
+    <ol>
+      <li>Open File Explorer.</li>
+      <li>Open your home folder, then the <code>ai-academy-test</code> folder. Your home folder is <code>C:\Users\</code> followed by your user name.</li>
+      <li>Double-click <code>hello.html</code>. Your browser opens it and shows "Hello from Cursor" in large letters.</li>
+    </ol>
+    <p>If you see that text, your first Agent prompt works.</p>
+  </div>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/43-windows-hello-browser.png" alt="Browser showing the text Hello from Cursor in large letters"></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Cursor tour: Open the editor</h2>
+    <p>Session 1 uses the editor window. Open it and find Tab, Ask, and Agent. You do not need to use them yet. You only need to see that each one is there.</p>
+    <ol>
+      <li>In the <b>Cursor Agents</b> window, click <b>IDE</b> at the top right. IDE means integrated development environment, the editor.</li>
+      <li>A second window opens. Its title is <b>ai-academy-test</b>. The file list on the left shows <code>hello.html</code>.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/18-ide.png" alt="Editor window titled ai-academy-test: the file list shows hello.html; the panel New Agent is on the right"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/44-windows-ide.png" alt="Editor window titled ai-academy-test: the file list shows hello.html; the panel New Agent is on the right"></button></figure>
+</section>
+
+<section class="slide" data-os="mac">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Cursor tour: Tab</h2>
+    <ol>
+      <li>Click <code>hello.html</code> in the file list. The file opens.</li>
+      <li>Click at the end of the last line and press Enter.</li>
+      <li>Type <code>&lt;p&gt;Made with </code> and wait 2 seconds. Grey text appears after your text, for example "Cursor&lt;/p&gt;". That grey text is the Tab suggestion. Pressing Tab would accept it. Do not press Tab now.</li>
+      <li>Press Escape. Then press Cmd+Z until your typed text is gone.</li>
+      <li>Press Cmd+W to close the file.</li>
+    </ol>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/19-tab-ghost.png" alt="hello.html open in the editor. Line 28 reads &lt;p&gt;Made with, followed by the grey suggested text Cursor&lt;/p&gt;"></button></figure>
+</section>
+
+<section class="slide" data-os="windows">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Cursor tour: Tab</h2>
+    <ol>
+      <li>Click <code>hello.html</code> in the file list. The file opens.</li>
+      <li>Click at the end of the last line and press Enter.</li>
+      <li>Type <code>&lt;p&gt;Made with </code> and wait 2 seconds. Grey text appears after your text, for example <code>&lt;a href="https://cursor.com"&gt;Cursor&lt;/a&gt;</code>. That grey text is the Tab suggestion. Pressing Tab would accept it. Do not press Tab now.</li>
+      <li>Press Escape. Then press Ctrl+Z until your typed text is gone.</li>
+      <li>Press Ctrl+F4 to close the file.</li>
+    </ol>
+    <p>In this picture, the file has a green background and the buttons <b>Undo</b> and <b>Keep</b>. They show the changes from the Agent. You do not need to click them.</p>
+  </div>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/45-windows-tab-ghost.png" alt="hello.html open in the editor with a green background. Line 30 reads &lt;p&gt;Made with, followed by grey suggested text that starts with &lt;a href=&quot;https://cursor.com&quot;&gt;Cursor. The buttons Undo and Keep are at the end of the line."></button></figure>
+</section>
+
+<section class="slide">
+  <div class="text">
+    <p class="label"></p>
+    <h2>Cursor tour: Ask and Agent</h2>
+    <ol>
+      <li>On the right side of the editor, find the panel named <b>New Agent</b>. It has a prompt box.</li>
+      <li>Below the prompt box, click the small button with the infinity symbol. A list opens: <b>Agent</b>, <b>Plan</b>, <b>Debug</b>, <b>Multitask</b>, <b>Ask</b>. <b>Agent</b> has a check mark.</li>
+      <li>Click <b>Agent</b> to close the list.</li>
+    </ol>
+    <p data-os="mac">Shortcut for later: Shift+Cmd+L opens a new Agent in the editor.</p>
+    <p data-os="windows">Shortcut for later: Ctrl+Shift+L opens a new Agent in the editor.</p>
+  </div>
+  <figure class="media" data-os="mac"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/20-mode-picker.png" alt="Mode list open under the New Agent prompt box: Agent with a check mark, Plan, Debug, Multitask, Ask"></button></figure>
+  <figure class="media" data-os="windows"><button class="zoom" type="button" aria-label="Show image full size"><img src="screenshots/46-windows-mode-picker.png" alt="Mode list open under the New Agent prompt box: Agent with a check mark, Plan, Debug, Multitask, Ask"></button></figure>
+</section>
+
+<section class="slide no-image">
+  <div class="text">
+    <p class="label"></p>
+    <h2>If it fails</h2>
+    <ol>
+      <li>Do not spend more than 10 minutes on your own.</li>
+      <li>Pair with a neighbor who has a working install. Watch the demo on their machine.</li>
+      <li>Tell a helper or the instructor, so they can look at your laptop after class.</li>
+    </ol>
+    <p>Ask the program lead if you have a question about your account before the session.</p>
+  </div>
+</section>
+
+<section class="slide no-image">
+  <div class="text">
+    <p class="label"></p>
+    <h2>You are ready</h2>
+    <ul class="checklist">
+      <li><label><input type="checkbox" data-key="signed-in"> Cursor opens and you are signed in</label></li>
+      <li><label><input type="checkbox" data-key="folder"> The folder ai-academy-test exists</label></li>
+      <li><label><input type="checkbox" data-key="hello"> hello.html shows Hello from Cursor in the browser</label></li>
+      <li><label><input type="checkbox" data-key="tour"> You saw the grey Tab text and the list with Agent and Ask</label></li>
+    </ul>
+    <p>If all four are checked, your install is ready for Session 1.</p>
+  </div>
+</section>
+
+</main>
+
+<nav id="contents" aria-label="Contents" hidden>
+  <ol id="toc-list"></ol>
+</nav>
+
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Full size image" tabindex="-1" hidden>
+  <img id="lightbox-img" alt="">
+</div>
+
+<footer class="bar">
+  <div class="progress" id="progress"></div>
+  <button class="btn secondary" id="back" type="button">Back</button>
+  <span id="counter" aria-live="polite">1 / 25</span>
+  <span class="spacer"></span>
+  <button class="btn secondary" id="toc-btn" type="button" aria-expanded="false" aria-controls="contents">Contents</button>
+  <button class="btn" id="next" type="button">Next</button>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  function $(id) { return document.getElementById(id); }
+  var deck = $('deck');
+  /* The deck shows one system. Elements with data-os are hidden by CSS for the other system.
+     Add ?os=mac or ?os=windows to the address to choose a system.
+     Add ?os=choose to show the chooser page, even when the system is known.
+     Unknown system: the page shows only the chooser until the reader picks a system.
+     The choice lasts for this visit only. Print shows both systems when the system is unknown. */
+  function detectOs() {
+    var forced = /[?&]os=(mac|windows|choose)(&|$)/.exec(location.search);
+    if (forced) return forced[1] === 'choose' ? '' : forced[1];
+    var name = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '').toLowerCase();
+    if (name.indexOf('mac') === 0) return 'mac';
+    if (name.indexOf('win') === 0) return 'windows';
+    return '';
+  }
+  var os = detectOs();
+  var chooser = $('choose-os');
+  var slides = [];
+  var total = 0;
+  var current = 0;
+  var back = $('back'), next = $('next'), counter = $('counter'), progress = $('progress');
+  var tocBtn = $('toc-btn'), toc = $('contents'), tocList = $('toc-list');
+  var lightbox = $('lightbox'), lightboxImg = $('lightbox-img');
+  var lastFocus = null;
+
+  var tocButtons = [];
+
+  /* Build the slide list for one system: the shared slides and the slides for that system.
+     The chooser is never in the list. Then build the slide labels and the contents list. */
+  function start(name) {
+    os = name;
+    document.documentElement.setAttribute('data-os', os);
+    Array.prototype.forEach.call(document.querySelectorAll('.slide'), function (slide) {
+      slide.classList.remove('active');
+    });
+    slides = Array.prototype.slice.call(document.querySelectorAll('.slide')).filter(function (slide) {
+      var slideOs = slide.getAttribute('data-os');
+      return slide !== chooser && (!slideOs || slideOs === os);
+    });
+    total = slides.length;
+    current = 0;
+    slides.forEach(function (slide, i) {
+      slide.querySelector('.label').textContent = 'Slide ' + (i + 1) + ' of ' + total;
+      var item = document.createElement('li');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = (i + 1) + '. ' + slide.querySelector('h1, h2').textContent;
+      button.addEventListener('click', function () {
+        show(i);
+        closeToc(true);
+      });
+      item.appendChild(button);
+      tocList.appendChild(item);
+    });
+    tocButtons = tocList.querySelectorAll('button');
+    tocBtn.disabled = false;
+    show(slideFromHash());
+  }
+
+  /* Unknown system: show only the chooser. Navigation stays off until the reader picks a system. */
+  function showChooser() {
+    Array.prototype.forEach.call(document.querySelectorAll('.slide'), function (slide) {
+      slide.classList.remove('active');
+    });
+    chooser.classList.add('active');
+    counter.textContent = '';
+    back.disabled = true;
+    next.disabled = true;
+    tocBtn.disabled = true;
+  }
+
+  /* Show slide i (0-based). Updates counter, progress bar, buttons and URL hash. */
+  function show(i) {
+    if (!total) return;
+    i = Math.max(0, Math.min(total - 1, i));
+    slides[current].classList.remove('active');
+    slides[current].removeAttribute('aria-current');
+    tocButtons[current].removeAttribute('aria-current');
+    current = i;
+    slides[i].classList.add('active');
+    slides[i].setAttribute('aria-current', 'step');
+    tocButtons[i].setAttribute('aria-current', 'step');
+    counter.textContent = (i + 1) + ' / ' + total;
+    progress.style.width = ((i + 1) / total * 100) + '%';
+    var focused = document.activeElement;
+    back.disabled = i === 0;
+    next.disabled = i === total - 1;
+    /* Keep keyboard focus on a usable button when one becomes disabled. */
+    if (focused === back && back.disabled) next.focus();
+    if (focused === next && next.disabled) back.focus();
+    slides[i].querySelector('.text').scrollTop = 0;
+    deck.scrollTop = 0;
+    try {
+      history.replaceState(null, '', '#' + (i + 1));
+    } catch (e) { /* Some browsers block this on file:// URLs. The deck still works. */ }
+  }
+
+  function move(step) { show(current + step); }
+
+  /* Read the slide number from the URL hash, for example #12. */
+  function slideFromHash() {
+    var n = parseInt(location.hash.slice(1), 10);
+    return isNaN(n) ? 0 : n - 1;
+  }
+
+  back.addEventListener('click', function () { move(-1); });
+  next.addEventListener('click', function () { move(1); });
+  window.addEventListener('hashchange', function () {
+    if (!total) return;
+    var i = slideFromHash();
+    if (i !== current) show(i);
+  });
+
+  /* Contents list */
+  function openToc() {
+    if (!total) return;
+    toc.hidden = false;
+    tocBtn.setAttribute('aria-expanded', 'true');
+    tocButtons[current].focus();
+  }
+  function closeToc(returnFocus) {
+    toc.hidden = true;
+    tocBtn.setAttribute('aria-expanded', 'false');
+    if (returnFocus) tocBtn.focus();
+  }
+  tocBtn.addEventListener('click', function () {
+    if (toc.hidden) openToc(); else closeToc(false);
+  });
+  document.addEventListener('click', function (e) {
+    if (!toc.hidden && !toc.contains(e.target) && e.target !== tocBtn) closeToc(false);
+  });
+
+  /* Lightbox: click an image to see it full size. Click or Esc closes it. */
+  Array.prototype.forEach.call(document.querySelectorAll('.zoom'), function (button) {
+    button.addEventListener('click', function () {
+      var img = button.querySelector('img');
+      lastFocus = button;
+      lightboxImg.src = img.getAttribute('src');
+      lightboxImg.alt = img.alt;
+      lightbox.hidden = false;
+      lightbox.focus();
+    });
+  });
+  function closeLightbox() {
+    lightbox.hidden = true;
+    lightboxImg.removeAttribute('src');
+    if (lastFocus) lastFocus.focus();
+  }
+  lightbox.addEventListener('click', closeLightbox);
+
+  /* Keyboard navigation */
+  var NEXT_KEYS = ['ArrowRight', ' ', 'PageDown', 'Enter'];
+  var BACK_KEYS = ['ArrowLeft', 'PageUp', 'Backspace'];
+  document.addEventListener('keydown', function (e) {
+    if (!total || e.altKey || e.ctrlKey || e.metaKey) return;
+    var key = e.key;
+    if (!lightbox.hidden) {
+      if (key === 'Escape') closeLightbox();
+      return;
+    }
+    if (!toc.hidden) {
+      if (key === 'Escape') closeToc(true);
+      return;
+    }
+    var target = e.target;
+    var tag = target.tagName;
+    var onCheckbox = tag === 'INPUT' && target.type === 'checkbox';
+    /* No slide keys inside text fields. */
+    if ((tag === 'INPUT' && !onCheckbox) || tag === 'TEXTAREA') return;
+    /* Space and Enter on a button, a link, or a checkbox run that element's own action. */
+    var onControl = tag === 'BUTTON' || tag === 'A' || onCheckbox;
+    if (onControl && (key === ' ' || key === 'Enter')) return;
+    if (NEXT_KEYS.indexOf(key) >= 0) move(1);
+    else if (BACK_KEYS.indexOf(key) >= 0) move(-1);
+    else if (key === 'Home') show(0);
+    else if (key === 'End') show(total - 1);
+    else return;
+    e.preventDefault();
+  });
+
+  /* Touch: swipe left for next, swipe right for back. */
+  var touchX = null, touchY = null;
+  deck.addEventListener('touchstart', function (e) {
+    touchX = e.changedTouches[0].clientX;
+    touchY = e.changedTouches[0].clientY;
+  }, { passive: true });
+  deck.addEventListener('touchend', function (e) {
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    var dy = e.changedTouches[0].clientY - touchY;
+    touchX = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > 1.5 * Math.abs(dy)) move(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
+  /* Copy button for the prompt text. Falls back to selecting the text. */
+  var copyBtn = $('copy'), promptText = $('prompt-text');
+  function copied() {
+    copyBtn.textContent = 'Copied';
+    setTimeout(function () { copyBtn.textContent = 'Copy'; }, 2000);
+  }
+  function selectAndCopy() {
+    var range = document.createRange();
+    range.selectNodeContents(promptText);
+    var selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    try {
+      if (document.execCommand('copy')) copied();
+    } catch (e) { /* The text stays selected. The user can press Cmd+C. */ }
+  }
+  copyBtn.addEventListener('click', function () {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(promptText.textContent).then(copied, selectAndCopy);
+    } else {
+      selectAndCopy();
+    }
+  });
+
+  /* Checklist: remember the state in localStorage. Storage may fail; the page still works. */
+  var STORE_KEY = 'cursor-walkthrough-checklist';
+  var saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+  } catch (e) { saved = {}; }
+  if (!saved || typeof saved !== 'object') saved = {};
+  Array.prototype.forEach.call(document.querySelectorAll('.checklist input'), function (box) {
+    box.checked = saved[box.dataset.key] === true;
+    box.addEventListener('change', function () {
+      saved[box.dataset.key] = box.checked;
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(saved));
+      } catch (e) { /* Storage is blocked. The box still works for this visit. */ }
+    });
+  });
+
+  Array.prototype.forEach.call(chooser.querySelectorAll('[data-choose]'), function (button) {
+    button.addEventListener('click', function () { start(button.getAttribute('data-choose')); });
+  });
+  if (os) start(os); else showChooser();
+})();
+</script>
+</body>
+</html>
