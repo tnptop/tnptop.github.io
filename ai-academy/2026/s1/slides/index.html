@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Session 1 Slides</title>
+<style>
+/* Fonts: self-hosted in fonts/, latin and thai subsets only. Licenses: fonts/OFL-*.txt */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 100 900; font-display: block;
+  src: url(fonts/fraunces-latin-opsz-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 100 900; font-display: block;
+  src: url(fonts/fraunces-latin-opsz-italic.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 500; font-display: block;
+  src: url(fonts/ibm-plex-mono-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 600; font-display: block;
+  src: url(fonts/ibm-plex-mono-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: block;
+  src: url(fonts/inter-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-display: block;
+  src: url(fonts/inter-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: block;
+  src: url(fonts/inter-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'IBM Plex Sans Thai'; font-weight: 400; font-display: block;
+  src: url(fonts/ibm-plex-sans-thai-thai-400-normal.woff2) format('woff2');
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: 'IBM Plex Sans Thai'; font-weight: 500; font-display: block;
+  src: url(fonts/ibm-plex-sans-thai-thai-500-normal.woff2) format('woff2');
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: 'IBM Plex Sans Thai'; font-weight: 600; font-display: block;
+  src: url(fonts/ibm-plex-sans-thai-thai-600-normal.woff2) format('woff2');
+  unicode-range: U+02D7, U+0303, U+0331, U+0E01-0E5B, U+200C-200D, U+25CC; }
+
+/* Identity tokens, from ~/workspace/personal/identity/tokens.css. Reskin here only. */
+:root {
+  /* 1. Primitives */
+  --c-navy: #0F1629;
+  --c-navy-text: #1B2233;
+  --c-paper: #F4F1EA;
+  --c-amber: #E6A23C;
+  --c-slate-on-dark: #738299;
+  --c-slate-on-light: #5C6678;
+
+  /* 2. Semantic roles: two poles and one thread */
+  --surface-a: var(--c-navy);
+  --text-on-a: var(--c-paper);
+  --label-on-a: var(--c-slate-on-dark);
+  --surface-b: var(--c-paper);
+  --text-on-b: var(--c-navy-text);
+  --label-on-b: var(--c-slate-on-light);
+  --thread: var(--c-amber);
+  --letterbox: color-mix(in srgb, var(--c-navy) 60%, black);
+
+  /* 3. Type families. IBM Plex Sans Thai covers Thai: Fraunces and Inter have no Thai glyphs. */
+  --font-display: 'Fraunces', 'IBM Plex Sans Thai', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-body: 'Inter', 'IBM Plex Sans Thai', system-ui, -apple-system, sans-serif;
+
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-black: 900;
+  --tracking-eyebrow: 0.14em;
+  --tracking-label: 0.10em;
+  --tracking-display: -0.01em;
+
+  /* 4. Slide sizes, px on the 1920x1080 stage (projector mapping of the type scale) */
+  --fs-label: 24px;
+  --fs-body: 40px;
+  --fs-dense: 36px;
+  --fs-h2: 84px;
+  --fs-h1: 112px;
+  --fs-opener: 200px;
+  --pad-x: 128px;
+
+  /* 5. AI Academy logo (slides/logo.svg). If the file is missing, the CSS background shows nothing. */
+  --logo: url("logo.svg");
+  --logo-watermark-opacity: 1;
+  --watermark-w: 56px;
+  --watermark-h: 56px;
+}
+
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--letterbox); }
+
+/* Stage: fixed 1920x1080, scaled by script to fit the window, centered with letterbox. */
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+}
+
+.slide { position: absolute; inset: 0; display: none; overflow: hidden; box-sizing: border-box; padding: 150px var(--pad-x) 120px; flex-direction: column; }
+.slide.active { display: flex; }
+
+.pole-a { background: var(--surface-a); color: var(--text-on-a); --label: var(--label-on-a); }
+.pole-b { background: var(--surface-b); color: var(--text-on-b); --label: var(--label-on-b); }
+
+/* Chrome: section eyebrow top left, counter bottom right. */
+.eyebrow, .count, .label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-label);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: var(--label);
+}
+.eyebrow { position: absolute; top: 60px; left: var(--pad-x); }
+.count { position: absolute; bottom: 52px; right: calc(var(--pad-x) + var(--watermark-w) + 32px); letter-spacing: var(--tracking-label); }
+.label { margin-bottom: 20px; font-weight: var(--fw-semibold); }
+.pole-a .label.thread, .pole-a .when { color: var(--thread); }
+
+.content { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+
+h1, h2, h3 { margin: 0; font-family: var(--font-display); letter-spacing: var(--tracking-display); }
+h1 { font-size: var(--fs-h1); font-weight: var(--fw-black); line-height: 1.02; padding-bottom: 0.1em; }
+h2 { font-size: var(--fs-h2); font-weight: var(--fw-black); line-height: 1.04; }
+h2::after { content: ""; display: block; width: 96px; height: 6px; margin: 36px 0 44px; background: var(--thread); }
+h3 { font-size: 46px; font-weight: var(--fw-semibold); line-height: 1.15; }
+p { margin: 0; }
+strong { font-weight: var(--fw-semibold); }
+.pole-b strong { text-decoration: underline; text-decoration-color: var(--thread); text-decoration-thickness: 5px; text-underline-offset: 8px; text-decoration-skip-ink: none; }
+code, .url { font-family: var(--font-mono); font-weight: var(--fw-medium); font-size: 0.9em; }
+a.url { color: inherit; text-decoration: none; border-bottom: 3px solid var(--thread); }
+.url-line { display: table; margin-top: 8px; }
+.nowrap { white-space: nowrap; }
+
+/* Bullet list: amber bar marks. */
+.points { list-style: none; margin: 0; padding: 0; }
+.points > li { position: relative; padding-left: 60px; margin-bottom: 30px; }
+.points > li::before { content: ""; position: absolute; left: 0; top: 0.68em; width: 30px; height: 5px; background: var(--thread); }
+.dense { font-size: var(--fs-dense); }
+.dense .points > li { margin-bottom: 22px; }
+
+/* Numbered steps: mono numbers. */
+.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+.steps > li { counter-increment: step; position: relative; padding-left: 96px; margin-bottom: 26px; }
+.steps + .points { margin-top: 56px; }
+.steps + .points > li { padding-left: 96px; }
+.steps > li::before { content: counter(step, decimal-leading-zero); position: absolute; left: 0; top: 0.12em; font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 30px; letter-spacing: var(--tracking-label); color: var(--label); border-bottom: 4px solid var(--thread); }
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 96px; }
+.thai { margin-top: auto; padding-top: 28px; font-size: var(--fs-dense); line-height: 1.6; border-top: 3px solid var(--thread); }
+
+/* Navy title and section openers */
+.opener { justify-content: center; }
+.opener .when { font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 40px; letter-spacing: var(--tracking-label); margin: 0 0 36px; }
+.opener h1 { font-size: var(--fs-opener); line-height: 1; }
+.opener h1::after { content: ""; display: block; width: 160px; height: 8px; margin-top: 56px; background: var(--thread); }
+.title-slide { justify-content: center; }
+.title-slide h1 { max-width: 1560px; }
+.title-slide .lead { margin-top: 56px; max-width: 1500px; }
+.title-slide .lead p + p { margin-top: 18px; }
+.title-slide .label { font-size: 30px; }
+.title-slide h1 { font-size: 96px; }
+
+/* Logo: large on the title and closing slides (.hero), a small watermark on every other slide. */
+.slide::after { content: ""; position: absolute; right: var(--pad-x); bottom: 40px; width: var(--watermark-w); height: var(--watermark-h); background: var(--logo) right center / contain no-repeat; opacity: var(--logo-watermark-opacity); pointer-events: none; }
+.slide.hero::after { content: none; }
+.hero-row { display: grid; grid-template-columns: 1fr 440px; gap: 96px; align-items: center; }
+.logo-large { height: 440px; background: var(--logo) center / contain no-repeat; }
+
+/* Split slides (topics 6 to 10): left half paper, right half navy. */
+.split { padding: 0; display: none; grid-template-columns: 1fr 1fr; }
+.split.active { display: grid; }
+.half { position: relative; min-height: 0; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; padding: 150px 88px 120px var(--pad-x); }
+.half.pole-a { padding: 150px var(--pad-x) 120px 88px; justify-content: center; }
+.split h2 { font-size: 72px; }
+.split h2::after { margin: 30px 0 40px; }
+.half .block + .block { margin-top: 44px; }
+.half .thai { min-height: 3.2em; }
+.fix { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 48px; line-height: 1.15; margin-bottom: 16px; padding-bottom: 0.1em; }
+.split .eyebrow { left: var(--pad-x); }
+
+/* Timeline (topics 5 and 13): an amber rule with one mark per era. */
+.timeline { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 48px; position: relative; }
+.timeline::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: var(--thread); }
+.timeline > li { position: relative; padding-top: 60px; font-size: var(--fs-dense); }
+.timeline > li::before { content: ""; position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--thread); }
+.timeline .when { display: block; margin-bottom: 10px; font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 28px; letter-spacing: var(--tracking-label); color: var(--label); }
+.timeline h3 { min-height: 2.3em; margin-bottom: 18px; }
+.mode { margin-top: 28px; padding-top: 24px; border-top: 3px solid var(--text-on-b); }
+.mode b { display: block; font-weight: 700; font-size: 48px; margin-bottom: 8px; }
+.after-timeline { margin-top: auto; }
+
+/* Agent loop (topic 12) */
+.loop-row { display: grid; grid-template-columns: 600px 1fr; gap: 88px; align-items: start; flex: 1; min-height: 0; }
+.loop-row .side { display: flex; flex-direction: column; min-height: 100%; }
+.loop { width: 600px; height: 600px; display: block; }
+.loop .ring { fill: none; stroke: var(--thread); stroke-width: 6; }
+.loop .arrow { fill: var(--thread); }
+.loop .node { fill: var(--surface-b); stroke: var(--text-on-b); stroke-width: 3; }
+.loop text { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 40px; fill: var(--text-on-b); text-anchor: middle; dominant-baseline: central; }
+
+/* Concept map (topic 21): keyword cluster, amber rule, session. */
+.map { list-style: none; margin: 0; padding: 0; }
+.map > li { display: grid; grid-template-columns: 72px 560px 1fr auto; align-items: center; gap: 28px; padding: 14px 0; border-bottom: 2px solid color-mix(in srgb, var(--label) 30%, transparent); }
+.map .n { font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 34px; color: var(--label); }
+.map .k { font-family: var(--font-display); font-weight: var(--fw-semibold); font-size: 44px; line-height: 1.15; }
+.map .rule { height: 4px; background: var(--thread); }
+.map .to { font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 38px; text-align: right; }
+.foot { margin-top: auto; font-size: var(--fs-dense); color: var(--label); }
+
+/* Before and after cards (topic 22) */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-bottom: 44px; }
+.compare > div { padding: 32px 40px; border-top: 6px solid var(--thread); background: color-mix(in srgb, var(--text-on-b) 6%, transparent); }
+
+/* Harness picture (topic 6, 2 of 2): building-to-agent table, window cleaner drawing on the right. */
+.harness-row { display: grid; grid-template-columns: 1fr 300px; gap: 80px; align-items: start; flex: 1; min-height: 0; }
+.pairs { width: 100%; border-collapse: collapse; font-size: var(--fs-dense); line-height: 1.35; }
+.pairs th { text-align: left; padding: 0 32px 14px 0; font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: var(--fs-label); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--label); border-bottom: 4px solid var(--thread); }
+.pairs td { vertical-align: top; padding: 18px 32px 18px 0; border-bottom: 2px solid color-mix(in srgb, var(--label) 30%, transparent); }
+.pairs td:first-child { width: 34%; }
+.cleaner { width: 300px; height: auto; display: block; color: var(--text-on-b); }
+.cleaner .line { fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.cleaner .wall { fill: none; stroke: var(--label); stroke-width: 3; }
+.cleaner .head { fill: var(--surface-b); stroke: currentColor; stroke-width: 4; }
+.cleaner .rope { fill: none; stroke: currentColor; stroke-width: 3; }
+.cleaner .harness { fill: none; stroke: var(--thread); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+.cleaner .anchor { fill: var(--thread); }
+.cleaner .helmet { fill: var(--thread); stroke: var(--thread); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Instructor notes: hidden. Press N to show them in a strip over the bottom of the slide. */
+.notes { display: none; position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; max-height: 50%; overflow: auto; box-sizing: border-box; padding: 28px var(--pad-x) 36px; background: var(--surface-a); color: var(--text-on-a); border-top: 6px solid var(--thread); font-family: var(--font-body); font-size: 28px; line-height: 1.45; }
+.notes::before { content: "Instructor notes \00B7  press N to hide"; display: block; margin-bottom: 12px; font-family: var(--font-mono); font-weight: var(--fw-semibold); font-size: 22px; letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; color: var(--thread); }
+.notes p + p, .notes ul { margin-top: 10px; }
+.notes ul { margin-bottom: 0; padding-left: 32px; }
+.notes-on .slide.active .notes { display: block; }
+</style>
+</head>
+<body>
+<main id="stage" aria-label="Session 1 slides">
+
+<!-- ================= Open, quick check (0:00-0:10) ================= -->
+
+<section class="slide pole-a title-slide hero" data-topic="1">
+  <div class="content hero-row">
+    <div>
+      <p class="label thread">TPIT AI Academy 2026 &middot; Basic Cursor AI for Software Developer</p>
+      <h1>Session 1: Introduction to Agentic AI Software Development</h1>
+      <div class="lead">
+        <p>Instructor: Thanapat Bhunnachet (Tob)</p>
+      </div>
+    </div>
+    <div class="logo-large" aria-hidden="true"></div>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="2">
+  <p class="eyebrow">Open, quick check</p>
+  <div class="content">
+    <h2>What you will be able to say after today</h2>
+    <ol class="steps">
+      <li><strong>Name the keywords</strong> of agentic AI development</li>
+      <li>Know which session teaches each one</li>
+      <li>Turn a 3-line requirement into <strong>a spec, a plan, and a running file</strong></li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="3">
+  <p class="eyebrow">Open, quick check</p>
+  <div class="content">
+    <h2>This is where we are going</h2>
+    <ul class="points">
+      <li>Look at the finished demo: <strong>the equipment loan list</strong></li>
+      <li>We build it live today, from a plain requirement</li>
+      <li>Later projects are different. <strong>The ideas carry over:</strong> say what you want, plan before code, check every step</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="4">
+  <p class="eyebrow">Open, quick check</p>
+  <div class="content">
+    <h2>Quick check: is Cursor working?</h2>
+    <ol class="steps">
+      <li>Open Cursor and start a new chat</li>
+      <li>Type <strong>Say hello in one sentence</strong> and send it</li>
+      <li>You get an answer: you are ready</li>
+    </ol>
+    <ul class="points">
+      <li>No answer? Watch the screen and pair with a neighbor</li>
+      <li>We fix installs at the end, after the content</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Fundamentals (0:10-0:25) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Fundamentals</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="5">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>A short history: 2 minutes</h2>
+    <ol class="timeline">
+      <li><span class="when">1990s on</span><h3>Traditional autocomplete</h3><p>The editor finishes a name it already knows. Rules and symbol tables, no model</p></li>
+      <li><span class="when">2021 on</span><h3>Small-model completion</h3><p>A small, fast model predicts the next lines. Example: GitHub Copilot</p></li>
+      <li><span class="when">2023 on</span><h3>Context-aware chat</h3><p>You ask in plain language. The model reads the files you show it and answers or edits</p></li>
+      <li><span class="when">Late 2024 on</span><h3>Agents</h3><p>The model plans, edits files, runs commands, reads the result, and repeats</p></li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide split" data-topic="6">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Recap: LLM (Large Language Model)</h2>
+    <p class="label">From AI foundation</p>
+    <p>A model trained on a vast amount of text, that predicts the next word. A very good autocomplete</p>
+    <p class="thai" lang="th">โมเดลภาษาขนาดใหญ่ — โมเดลที่เรียนรู้จากข้อความจำนวนมาก แล้วทำนายคำถัดไป</p>
+  </div>
+  <div class="half pole-a">
+    <p class="label thread">One more thing for engineers</p>
+    <ul class="points">
+      <li><strong>Pure function:</strong> text in, next token out</li>
+      <li>No memory between calls. It never runs your code</li>
+      <li><strong>The harness</strong> is the program around the model. It resends the context, calls tools, and runs commands. Cursor is a harness. GitHub Copilot is another one</li>
+    </ul>
+    <p class="thai" lang="th">ฮาร์เนส — โปรแกรมที่ครอบโมเดล ส่งบริบท เรียกเครื่องมือ และรันคำสั่งให้</p>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide pole-b" data-topic="6">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>Keyword: harness</h2>
+    <div class="harness-row">
+      <table class="pairs">
+        <thead><tr><th>On the building</th><th>In agentic AI</th></tr></thead>
+        <tbody>
+          <tr><td>The brain</td><td><strong>The model:</strong> it thinks and decides, then sends signals. It cannot touch anything</td></tr>
+          <tr><td>The body, plus the harness it wears</td><td><strong>The harness</strong> (today: Cursor): it follows the signals, reads and writes files, and runs commands</td></tr>
+          <tr><td>Gear clipped on with karabiners</td><td>Tools, rules, skills, MCP servers</td></tr>
+          <tr><td>The safety line to the roof</td><td><strong>Your approvals.</strong> Auto-run off</td></tr>
+        </tbody>
+      </table>
+      <svg class="cleaner" viewBox="0 0 360 640" aria-hidden="true">
+        <!-- Building: roof line, wall, two columns of windows -->
+        <path class="wall" d="M10,640 V24 H350 V640"/>
+        <path class="line" d="M0,24 H360"/>
+        <rect class="wall" x="34" y="70" width="56" height="70"/><rect class="wall" x="270" y="70" width="56" height="70"/>
+        <rect class="wall" x="34" y="190" width="56" height="70"/><rect class="wall" x="270" y="190" width="56" height="70"/>
+        <rect class="wall" x="34" y="310" width="56" height="70"/><rect class="wall" x="270" y="310" width="56" height="70"/>
+        <rect class="wall" x="34" y="430" width="56" height="70"/><rect class="wall" x="270" y="430" width="56" height="70"/>
+        <rect class="wall" x="34" y="550" width="56" height="70"/><rect class="wall" x="270" y="550" width="56" height="70"/>
+        <!-- Safety line from the roof anchor to the harness -->
+        <circle class="anchor" cx="290" cy="24" r="10"/>
+        <path class="rope" d="M290,24 L223,450"/>
+        <g transform="translate(200,440) scale(1.3) translate(-200,-440)">
+        <!-- Window cleaner: head, body, arms (one on the rope, one with a squeegee), legs -->
+        <circle class="head" cx="200" cy="330" r="26"/>
+        <!-- Safety helmet: dome and brim -->
+        <path class="helmet" d="M174,322 A27,27 0 0 1 226,322 Z M166,322 H234"/>
+        <path class="line" d="M200,356 V452 M200,382 L234,350 M200,382 L150,410 L132,388 M118,402 L146,374 M192,456 L180,545 M208,456 L222,545"/>
+        <!-- The harness the cleaner wears: chest straps and waist belt -->
+        <path class="harness" d="M184,370 L200,412 L216,370 M182,448 H218"/>
+        <!-- Gear clipped on with karabiners: bucket on the left, spray bottle on the right -->
+        <path class="line" d="M184,452 L170,470 M156,470 H184 L180,500 H160 Z M216,452 L232,468 M224,468 H240 V500 H224 Z M228,468 V460 H238"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide split" data-topic="7">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Recap: token</h2>
+    <p class="label">From AI foundation</p>
+    <p>A small piece of text, close to a word or part of a word</p>
+    <p class="label" style="margin-top:40px">Rule of thumb</p>
+    <div class="dense"><ul class="points">
+      <li>1 token is about 4 English characters (4&nbsp;bytes)</li>
+      <li>1,000 tokens is about 750 English words (4 KB)</li>
+    </ul></div>
+    <p class="thai" lang="th">โทเคน — หน่วยย่อยของข้อความที่โมเดลใช้อ่านและเขียน</p>
+  </div>
+  <div class="half pole-a">
+    <p class="label thread">One more thing for engineers</p>
+    <ul class="points">
+      <li>Code and Thai <strong>cost more tokens per character</strong> than English</li>
+      <li>Thai is 3 bytes per character in UTF-8. The 4-byte rule does not work for Thai</li>
+      <li>More tokens: more cost, slower, less room</li>
+      <li>Long chats with big pasted files get slow, expensive, and fill the context window (next)</li>
+    </ul>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide split" data-topic="8">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Recap: context window</h2>
+    <p class="label">From AI foundation</p>
+    <p>The amount of text the model can hold at once</p>
+    <p class="label" style="margin-top:40px">Counted in tokens</p>
+    <p>For example, 256K tokens is about 1&nbsp;MB of English text (slide 9, "Recap: token")</p>
+    <p class="thai" lang="th">ขนาดหน้าต่างบริบท — จำนวนโทเคนที่โมเดลอ่านได้ในครั้งเดียว</p>
+  </div>
+  <div class="half pole-a">
+    <p class="label thread">One more thing for engineers</p>
+    <ul class="points">
+      <li>One window holds: system prompt, tool definitions, rules, skills, MCP tools, and the conversation</li>
+      <li><strong>Every message resends the whole chat</strong>: your prompts, @&#8209;files, and every tool result (slide 7, "Recap: LLM")</li>
+      <li>When it fills, the harness summarizes or drops older parts</li>
+      <li>So: <strong>start a new chat per task</strong>, and <strong>@-mention only what matters</strong></li>
+    </ul>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide split" data-topic="9">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Recap: hallucination</h2>
+    <p class="label">From AI foundation</p>
+    <p>A confident answer that is wrong</p>
+    <p class="thai" lang="th">อาการมั่ว — โมเดลตอบสิ่งที่ฟังดูมั่นใจแต่ไม่จริง</p>
+  </div>
+  <div class="half pole-a">
+    <p class="label thread">Readjust</p>
+    <ul class="points">
+      <li><strong>The model is not confident.</strong> It writes the most likely next token</li>
+      <li>No "I am not sure" signal, and no tone or body language: a smooth answer reads as certain</li>
+      <li>It is trained to write fluent prose, and the chat hides the token probabilities</li>
+    </ul>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide split" data-topic="9">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Recap: hallucination</h2>
+    <p class="label">From AI foundation</p>
+    <p>A confident answer that is wrong</p>
+    <p class="thai" lang="th">อาการมั่ว — โมเดลตอบสิ่งที่ฟังดูมั่นใจแต่ไม่จริง</p>
+  </div>
+  <div class="half pole-a">
+    <div class="block">
+      <p class="label thread">One more thing for engineers</p>
+      <div class="dense"><ul class="points">
+        <li>The common shape: <strong>gap filling</strong></li>
+        <li>The model has no file, doc, or data value, so it guesses</li>
+        <li>The guess looks like a real API, flag, or path</li>
+        <li>Often the right file was available, but nobody showed it to the model</li>
+      </ul></div>
+    </div>
+    <div class="block">
+      <p class="fix">The fix is not "ask again".</p>
+      <div class="dense"><ul class="points">
+        <li>Show the model the real file or docs</li>
+        <li>Run the code: the compiler or test tells the truth</li>
+      </ul></div>
+    </div>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide split" data-topic="10">
+  <div class="half pole-b">
+    <p class="eyebrow">Fundamentals</p>
+    <h2>Keyword: non&#8209;deterministic</h2>
+    <p class="label">The keyword</p>
+    <p>The same prompt can give a different answer each time. This is <strong>normal model behavior, not a bug</strong></p>
+    <p class="thai" lang="th">ผลลัพธ์ไม่คงที่ — ถามคำถามเดิมสองครั้ง อาจได้คำตอบต่างกัน</p>
+  </div>
+  <div class="half pole-a">
+    <p class="label thread">One more thing for engineers</p>
+    <ul class="points">
+      <li>The model <strong>samples</strong> the next token. It does not pick the single best one</li>
+      <li>Same dice roll as slide 11, "Recap: hallucination": a likely token, not the one right answer</li>
+      <li>Do not expect the same code twice</li>
+      <li><strong>Pin behavior with a spec and a test.</strong> Compare plans, not first impressions</li>
+    </ul>
+    <p class="count"></p>
+  </div>
+</section>
+
+<section class="slide pole-b" data-topic="11">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content dense">
+    <h2>Keyword: tool use</h2>
+    <ul class="points">
+      <li><strong>The model cannot run anything.</strong> It only writes text (slide 7, "Recap: LLM")</li>
+      <li><strong>In:</strong> the harness puts the tool list into the context (name, purpose, inputs)</li>
+      <li><strong>Out:</strong> the model is trained to write a tool call: the tool name plus its inputs</li>
+      <li><strong>Back in:</strong> the harness runs the call and pastes the result into the context</li>
+      <li>The brain sends the signal. The body runs it (slide 8, "Keyword: harness")</li>
+    </ul>
+    <p class="thai" lang="th">การใช้เครื่องมือ — โมเดลเขียนคำขอ แล้วฮาร์เนสเป็นผู้รันให้</p>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="12">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>Keyword: agent loop</h2>
+    <div class="loop-row">
+      <svg class="loop" viewBox="0 0 600 600" role="img" aria-labelledby="loop-title">
+        <title id="loop-title">The agent loop: plan, then act, then observe, then repeat, back to plan</title>
+        <circle class="ring" cx="300" cy="300" r="225"/>
+        <path class="arrow" d="M-16,-16 L18,0 L-16,16 Z" transform="translate(459.1,459.1) rotate(135)"/>
+        <path class="arrow" d="M-16,-16 L18,0 L-16,16 Z" transform="translate(140.9,459.1) rotate(225)"/>
+        <path class="arrow" d="M-16,-16 L18,0 L-16,16 Z" transform="translate(140.9,140.9) rotate(315)"/>
+        <path class="arrow" d="M-16,-16 L18,0 L-16,16 Z" transform="translate(459.1,140.9) rotate(45)"/>
+        <rect class="node" x="185" y="40" width="230" height="70" rx="35"/><text x="300" y="75">Plan</text>
+        <rect class="node" x="410" y="265" width="180" height="70" rx="35"/><text x="500" y="300">Act</text>
+        <rect class="node" x="170" y="490" width="260" height="70" rx="35"/><text x="300" y="525">Observe</text>
+        <rect class="node" x="10" y="265" width="190" height="70" rx="35"/><text x="105" y="300">Repeat</text>
+      </svg>
+      <div class="side">
+        <ul class="points">
+          <li><strong>Plan, act, observe, repeat</strong></li>
+          <li>Your own loop: read, write code, run the test, read the result, fix</li>
+          <li>The agent runs the same loop, with tools (slide 14, "Keyword: tool use") in place of your hands</li>
+        </ul>
+        <p class="thai" lang="th">วงจรเอเจนต์ — วางแผน ลงมือทำ ดูผล แล้ววนซ้ำ</p>
+      </div>
+    </div>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="12">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>Keyword: agent loop</h2>
+    <ul class="points">
+      <li>How does it know it is right? <strong>It runs the tests and reads the output</strong></li>
+      <li>No test and no error output: nothing to observe, so it guesses (slide 12, "Recap: hallucination")</li>
+      <li>Each turn adds a tool result, so a long run fills the window (slide 10, "Recap: context window")</li>
+      <li>It ends with a final answer, or when you stop it</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="13">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>Keyword: autonomy levels</h2>
+    <ol class="timeline">
+      <li><span class="when">1990s on</span><h3>Traditional autocomplete</h3><p class="mode"><b>No AI</b>No autonomy. Same input, same output (slide 13, "Keyword: non&#8209;deterministic")</p></li>
+      <li><span class="when">2021 on</span><h3>Small-model completion</h3><p class="mode"><b>Completion</b>Completes code as you type. In Cursor: Tab</p></li>
+      <li><span class="when">2023 on</span><h3>Context-aware chat</h3><p class="mode"><b>Ask</b>Answers questions, edits no file</p></li>
+      <li><span class="when">Late 2024 on</span><h3>Agents</h3><p class="mode"><b>Agent</b>Plans and runs many steps on its own</p></li>
+    </ol>
+    <p class="after-timeline dense"><strong>An agent is a model plus a harness that runs the loop</strong> (slides 14 and 15, "Tool use", "Agent loop")</p>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="13">
+  <p class="eyebrow">Fundamentals</p>
+  <div class="content">
+    <h2>The cost of autonomy</h2>
+    <ul class="points">
+      <li>More autonomy means <strong>more steps you did not read</strong></li>
+      <li>AI Foundation, module 3: AI suggests, <strong>you decide, and you are responsible</strong></li>
+      <li><strong>Pick the lowest level that does the job</strong></li>
+      <li><strong>Read and verify</strong> before you accept: the agent checks its tests, you check the agent</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Cursor tour (0:25-0:35) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Cursor tour</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="14">
+  <p class="eyebrow">Cursor tour</p>
+  <div class="content">
+    <h2>What you will open</h2>
+    <ul class="points">
+      <li><strong>Two windows:</strong> Agents (home) and IDE (the editor). We use the IDE today</li>
+      <li><strong>Tab, Ask, Agent</strong></li>
+      <li>@-context, project rules, model picker, Context Usage panel</li>
+      <li>Cursor is our first harness, not the only one. GitHub Copilot has the same Ask and Agent modes</li>
+      <li>Follow along on your own machine. <strong>Did the setup check? This is a repeat</strong></li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="15">
+  <p class="eyebrow">Cursor tour</p>
+  <div class="content">
+    <h2>Try it yourself now</h2>
+    <ol class="steps">
+      <li>Click <strong>IDE</strong> at the top right. The editor opens</li>
+      <li>No <code>ai-academy-demo</code> folder yet? <strong>Open project</strong> &gt; <strong>Documents</strong> &gt; <strong>New Folder</strong>. Click <strong>Open</strong>, then <strong>Yes, I trust the authors</strong></li>
+      <li><strong>Tab</strong>: open or create <code>hello.html</code>, type <code>&lt;p&gt;Made with</code>, press Tab to accept</li>
+      <li><strong>Ask</strong>: pick Ask in the mode list, ask one question about hello.html</li>
+      <li><strong>Agent</strong>: pick Agent in the mode list. Do not run it yet</li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Live demo (0:35-1:00) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Live demo</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="16">
+  <p class="eyebrow">Live demo</p>
+  <div class="content dense">
+    <h2>The equipment loan list</h2>
+    <ul class="points">
+      <li>A small internal tool: who borrowed which item, and when it is due</li>
+      <li>Same Thai requirement as the tour, now in <strong>Agent</strong>: this time files appear</li>
+      <li>Watch for 4 moments: <strong>spec first, plan first, one step then check, error pasted back</strong></li>
+      <li>Why: the model's code is <strong>very likely correct, not guaranteed</strong></li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="17">
+  <p class="eyebrow">Live demo</p>
+  <div class="content">
+    <h2>Milestone: spec, plan, generate, run</h2>
+    <ol class="steps">
+      <li>Ask for a spec before any code (<code>spec.md</code>)</li>
+      <li>Ask for a step-by-step plan (<code>plan.md</code>)</li>
+      <li>Generate step 1 only</li>
+      <li>Open the file in your browser. Check step 1 against the plan</li>
+      <li>Then generate the rest</li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="18">
+  <p class="eyebrow">Live demo</p>
+  <div class="content">
+    <h2>Milestone: break it, then fix it</h2>
+    <ul class="points">
+      <li>We change one variable name on purpose</li>
+      <li><strong>Paste the console error back into the chat, nothing else</strong></li>
+      <li>Watch the model find the cause and fix it</li>
+      <li>Then <code>@spec.md</code>: add sort by due date. <strong>Show the file, so it does not guess</strong></li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Mini hands-on (1:00-1:15) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Mini hands-on</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="19">
+  <p class="eyebrow">Mini hands-on</p>
+  <div class="content">
+    <h2>Your turn: pick one requirement</h2>
+    <ol class="steps">
+      <li>Open <code>hands-on.md</code> at <a class="url url-line" href="https://tnptop.com/ai-academy/2026/s1/">https://tnptop.com/ai-academy/2026/s1/</a></li>
+      <li>Pick one: <strong>meeting room booking list, visitor log, or team to-do list</strong></li>
+      <li>Open <code>ai-academy-demo</code>. Start a <strong>new chat</strong> in Agent mode</li>
+      <li>Paste the requirement. Ask for a spec, then a plan</li>
+      <li>Generate, then open the file in your browser</li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="20">
+  <p class="eyebrow">Mini hands-on</p>
+  <div class="content">
+    <h2>Reflection questions</h2>
+    <ol class="steps">
+      <li>Where did the plan differ from what you expected?</li>
+      <li>What did the agent decide on its own that your requirement did not say? For example the date format, or what happens on delete</li>
+      <li>If something failed when you ran it, what did you do next?</li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Roadmap and peek (1:15-1:25) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Roadmap and peek</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="21">
+  <p class="eyebrow">Roadmap and peek</p>
+  <div class="content">
+    <h2>Concept map: where each keyword goes next</h2>
+    <ol class="map">
+      <li><span class="n">1</span><span class="k">How the model works</span><span class="rule"></span><span class="to">Session 3</span></li>
+      <li><span class="n">2</span><span class="k">Chat vs agent</span><span class="rule"></span><span class="to">Sessions 2 and 3</span></li>
+      <li><span class="n">3</span><span class="k">Context engineering</span><span class="rule"></span><span class="to">Session 4</span></li>
+      <li><span class="n">4</span><span class="k">Spec-driven workflow</span><span class="rule"></span><span class="to">Sessions 2 and 5</span></li>
+      <li><span class="n">5</span><span class="k">Verification loop</span><span class="rule"></span><span class="to">Session 4</span></li>
+      <li><span class="n">6</span><span class="k">Extending the agent</span><span class="rule"></span><span class="to">Session 4</span></li>
+      <li><span class="n">7</span><span class="k">Responsible use</span><span class="rule"></span><span class="to">Common Course</span></li>
+    </ol>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="22">
+  <p class="eyebrow">Roadmap and peek</p>
+  <div class="content dense">
+    <h2>Peek: MCP (Model Context Protocol)</h2>
+    <div class="compare">
+      <div><p>Without MCP, you copy a ticket from the ticket system and paste it into the chat.</p></div>
+      <div><p>With MCP, <strong>the agent reads the ticket itself</strong>.</p></div>
+    </div>
+    <ul class="points">
+      <li>MCP is the standard that makes this work: a server exposes tools and data, the agent calls them. An MCP server is gear that clips onto the harness</li>
+      <li>Company rule: <strong>only MCP servers IT has approved</strong>, even for a prototype. Ask your UM for the list</li>
+      <li>Full depth in Session 4</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="23">
+  <p class="eyebrow">Roadmap and peek</p>
+  <div class="content dense">
+    <h2>Peek: skills and commands</h2>
+    <ul class="points">
+      <li><strong>A skill is a saved procedure in a Markdown file</strong> (<code>SKILL.md</code>). Example: "review this file: run the linter, list each problem, propose a fix"</li>
+      <li>The agent starts a skill by itself when the task matches. <strong>Rules are always on</strong> (from the tour)</li>
+      <li>Skills are an open standard. They clip onto the harness</li>
+      <li>A command is a saved prompt. You start one with <code>/</code> in the chat. Most harnesses have skills and commands</li>
+      <li>Full depth in Session 4</li>
+    </ul>
+  </div>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b" data-topic="24">
+  <p class="eyebrow">Roadmap and peek</p>
+  <div class="content dense">
+    <h2>Peek: responsible use</h2>
+    <div class="cols">
+      <ul class="points">
+        <li>AI Foundation rules still apply: classify data before you paste, no secrets or personal data, verify before you use. <strong>You own the decision</strong></li>
+        <li>New with an agent: <strong>it acts, not only answers.</strong> Read every command before you approve it. <strong>Keep auto-run off</strong></li>
+      </ul>
+      <ul class="points">
+        <li>CIO-certified at every company: Cursor (all its models), Gemini, GitHub Copilot. Codex and Claude Code are not on the list. Your company IT may allow them. Ask your UM</li>
+        <li>Use your company Cursor account only. No secrets in prompts, rules files, or code</li>
+      </ul>
+    </div>
+  </div>
+  <p class="count"></p>
+</section>
+
+<!-- ================= Close (1:25-1:30) ================= -->
+
+<section class="slide pole-a opener" data-topic="opener">
+  <h1>Close</h1>
+  <p class="count"></p>
+</section>
+
+<section class="slide pole-b hero" data-topic="25">
+  <p class="eyebrow">Close</p>
+  <div class="content dense">
+    <h2>Homework and Q&amp;A</h2>
+    <div class="hero-row">
+      <ul class="points">
+      <li>Finish your Cursor install and run the quick check <strong class="nowrap">before 2026-11-05</strong></li>
+      <li>Homework and the hands-on sheet stay at <a class="url url-line" href="https://tnptop.com/ai-academy/2026/s1/">https://tnptop.com/ai-academy/2026/s1/</a></li>
+      <li>Write <strong>one capstone idea in 5 lines</strong>: a twist on a later session's project, or a fresh idea from your own work</li>
+      <li>Questions now, or ask in the course Google Chat group: <a class="url url-line" href="https://chat.google.com/app/chat/AAQAEJ69C4A">https://chat.google.com/app/chat/AAQAEJ69C4A</a></li>
+      </ul>
+      <div class="logo-large" aria-hidden="true"></div>
+    </div>
+  </div>
+  <p class="count"></p>
+</section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total = slides.length;
+  var current = 0;
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  /* Write the counter on every slide, for example "07 / 35". */
+  slides.forEach(function (slide, i) {
+    slide.querySelector('.count').textContent = pad(i + 1) + ' / ' + pad(total);
+  });
+
+  /* Scale the 1920x1080 stage to fit the window. The body color fills the letterbox. */
+  function fit() {
+    var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+    stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+  }
+
+  /* Show slide i (0-based). Updates the URL hash. */
+  function show(i) {
+    i = Math.max(0, Math.min(total - 1, i));
+    slides[current].classList.remove('active');
+    slides[current].removeAttribute('aria-current');
+    current = i;
+    slides[i].classList.add('active');
+    slides[i].setAttribute('aria-current', 'step');
+    try {
+      history.replaceState(null, '', '#' + (i + 1));
+    } catch (e) { /* Some browsers block this on file:// URLs. The deck still works. */ }
+  }
+
+  function move(step) { show(current + step); }
+
+  /* Read the slide number from the URL hash, for example #12. */
+  function slideFromHash() {
+    var n = parseInt(location.hash.slice(1), 10);
+    return isNaN(n) ? 0 : n - 1;
+  }
+
+  window.addEventListener('hashchange', function () {
+    var i = slideFromHash();
+    if (i !== current) show(i);
+  });
+  window.addEventListener('resize', fit);
+
+  function toggleFullscreen() {
+    if (document.fullscreenElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+    } else if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen().catch(function () { /* Blocked. The deck still works. */ });
+    }
+  }
+
+  /* Keyboard navigation */
+  var NEXT_KEYS = ['ArrowRight', 'ArrowDown', 'PageDown', ' '];
+  var BACK_KEYS = ['ArrowLeft', 'ArrowUp', 'PageUp'];
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var key = e.key;
+    /* Space on a link runs the link's own action. */
+    if (e.target.tagName === 'A' && key === ' ') return;
+    if (NEXT_KEYS.indexOf(key) >= 0) move(1);
+    else if (BACK_KEYS.indexOf(key) >= 0) move(-1);
+    else if (key === 'Home') show(0);
+    else if (key === 'End') show(total - 1);
+    else if (key === 'f' || key === 'F') toggleFullscreen();
+    else return;
+    e.preventDefault();
+  });
+
+  fit();
+  show(slideFromHash());
+})();
+</script>
+</body>
+</html>

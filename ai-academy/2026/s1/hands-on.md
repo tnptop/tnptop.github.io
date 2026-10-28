@@ -31,13 +31,16 @@ Add, edit, delete, and view tasks. No login needed.
 
 ## Step 2: Ask Cursor for a plan
 
-1. Create a new empty folder named `hands-on`. Use the same steps as
-   setup Step 4: in the Agents window, click **Start from scratch**, then
-   **New Folder**. Then click **IDE**.
-2. Open the chat and switch it to Agent mode.
+1. Use the `ai-academy-demo` folder from the Cursor tour. If it is not
+   open, use the **File** menu > **Open Folder**, go to **Documents**,
+   select `ai-academy-demo`, and click **Open**. On Windows the button is
+   **Select Folder**.
+2. Start a new chat: click **+** at the top of the chat panel. Switch it to
+   Agent mode. Do not reuse the chat from the tour. A new chat starts with
+   an empty context window.
 3. Paste your chosen requirement.
 4. Ask: "Turn this into a short spec, then a step-by-step plan for a
-   single HTML file with inline CSS and JavaScript, using localStorage."
+   single new HTML file with inline CSS and JavaScript, using localStorage."
 
 ## Step 3: Generate and run
 
@@ -47,13 +50,14 @@ Add, edit, delete, and view tasks. No login needed.
 3. Try each action: add, edit, delete, view.
 
 Your page will look different from your neighbor's page, even with the
-same option. The model writes new code each time (topic 7). Check that
-each action works. The look does not need to match.
+same option. The model writes new code each time (slide 13,
+"Keyword: non-deterministic"). Check that each action works. The look
+does not need to match.
 
 ## Reflection questions
 
 Answer these in your own words. They map to the concept map on the
-slides (topic 21).
+slides (slide 30, "Concept map: where each keyword goes next").
 
 1. Where did the plan differ from what you expected the model to build?
    (cluster 4, spec-driven workflow — the spec and plan are not the same

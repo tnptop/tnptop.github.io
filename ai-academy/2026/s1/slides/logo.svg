@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 48 284 308">
+  <title>AI Academy</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="48" x2="0" y2="356" gradientUnits="userSpaceOnUse">
+      <stop offset="0.14" stop-color="#1ED8B6"/>
+      <stop offset="0.53" stop-color="#3B98D8"/>
+      <stop offset="0.85" stop-color="#6152F5"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#g)" d="M74 301 L167.3 75.6 A50 50 0 0 1 256.7 75.6 L350 301 A38 38 0 0 1 282 335 L240.6 245.7 A32 32 0 0 0 183.4 245.7 L142 335 A38 38 0 0 1 74 301 Z"/>
+</svg>
