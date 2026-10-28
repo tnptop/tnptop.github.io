@@ -6,13 +6,21 @@ neighbor if you do not. This sheet is online at https://tnptop.com/ai-academy/20
 ## Step 1: Pick one requirement
 
 Pick one of these three. Each is a 3-line requirement, the same shape as
-the demo requirement. Write it in Thai or English. The model reads both.
+the demo requirement. Each option has an English and a Thai version.
+Use either one. The model reads both.
 
 **Option A: Meeting room booking list**
 ```
 We need a simple list to book meeting rooms.
 Fields: room name, booked by, date and time.
 Add, edit, delete, and view bookings. No login needed.
+```
+
+ภาษาไทย:
+```
+ทีมเราต้องการรายการง่าย ๆ สำหรับจองห้องประชุม
+ข้อมูลที่ต้องเก็บ: ชื่อห้อง, ชื่อผู้จอง, วันและเวลาที่จอง
+ต้องเพิ่ม, แก้ไข, ลบ, และดูรายการจองได้ ไม่ต้องมีระบบล็อกอิน
 ```
 
 **Option B: Visitor log**
@@ -22,11 +30,25 @@ Fields: visitor name, host employee, check-in time.
 Add, edit, delete, and view visitor entries. No login needed.
 ```
 
+ภาษาไทย:
+```
+ทีมเราต้องการสมุดบันทึกง่าย ๆ สำหรับผู้มาติดต่อที่ออฟฟิศ
+ข้อมูลที่ต้องเก็บ: ชื่อผู้มาติดต่อ, ชื่อพนักงานที่มาพบ, เวลาเข้า
+ต้องเพิ่ม, แก้ไข, ลบ, และดูรายการผู้มาติดต่อได้ ไม่ต้องมีระบบล็อกอิน
+```
+
 **Option C: Team to-do list**
 ```
 We need a simple to-do list for a small team.
 Fields: task name, assigned to, due date.
 Add, edit, delete, and view tasks. No login needed.
+```
+
+ภาษาไทย:
+```
+ทีมเล็ก ๆ ของเราต้องการรายการงานที่ต้องทำแบบง่าย ๆ
+ข้อมูลที่ต้องเก็บ: ชื่องาน, ผู้รับผิดชอบ, วันครบกำหนด
+ต้องเพิ่ม, แก้ไข, ลบ, และดูรายการงานได้ ไม่ต้องมีระบบล็อกอิน
 ```
 
 ## Step 2: Ask Cursor for a plan
