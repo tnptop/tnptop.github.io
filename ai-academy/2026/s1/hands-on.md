@@ -1,7 +1,7 @@
 # Mini hands-on (1:00-1:15)
 
 15 minutes. Work alone if you have a working Cursor install. Pair with a
-neighbor if you do not. This sheet is online at https://tnptop.com/ai-academy/2026/s1/hands-on.md.
+neighbor if you do not. This sheet is online at https://tnptop.com/ai-academy/2026/s1/.
 
 ## Step 1: Pick one requirement
 

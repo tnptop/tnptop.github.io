@@ -2,7 +2,7 @@
 
 Two items. Do item 1 before Session 2 on 2026-11-05, 10:00-12:00. Keep
 item 2 for your capstone project. This sheet is online at
-https://tnptop.com/ai-academy/2026/s1/homework.md.
+https://tnptop.com/ai-academy/2026/s1/.
 
 ## 1. Finish the Cursor install and run the tour check
 

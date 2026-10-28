@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AI Academy 2026</title>
+<style>
+  :root { --fg: #1a1a1a; --bg: #fff; --muted: #555; --border: #ccc; --code-bg: #f3f3f3; --link: #0b57d0; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e8e8e8; --bg: #161616; --muted: #aaa; --border: #444; --code-bg: #242424; --link: #8ab4f8; }
+  }
+  body { font: 18px/1.6 system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 16px; color: var(--fg); background: var(--bg); overflow-wrap: anywhere; }
+  a { color: var(--link); }
+  .nav { font-size: 16px; color: var(--muted); }
+  pre { position: relative; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; padding-top: 40px; }
+  code { font-family: ui-monospace, Menlo, Consolas, monospace; background: var(--code-bg); padding: 0 .25em; border-radius: 3px; }
+  pre code { background: none; padding: 0; }
+  pre button { position: absolute; top: 6px; right: 6px; font: 14px system-ui, sans-serif; color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 2px 10px; cursor: pointer; }
+  table { border-collapse: collapse; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; }
+  img { max-width: 100%; }
+  blockquote { margin-left: 0; padding-left: 1rem; border-left: 4px solid var(--border); color: var(--muted); }
+</style>
+</head>
+<body>
+<p class="nav"><a id="back" href="./">Back to the list</a></p>
+<main id="out">Loading...</main>
+<p class="nav"><a id="raw" href="#">Raw Markdown file</a></p>
+<!-- marked 18.1.0 (UMD build, vendored) -->
+<script src="vendor/marked.umd.js"></script>
+<script>
+// Accept only relative .md paths: no scheme, no leading "/", no "//", no "\", no ".." segment.
+function validPath(f) {
+  return typeof f === 'string' && /\.md$/.test(f) &&
+    !/[:\\]/.test(f) && !f.startsWith('/') && !f.includes('//') &&
+    !f.split('/').includes('..');
+}
+async function main() {
+  const out = document.getElementById('out');
+  const f = new URLSearchParams(location.search).get('f');
+  if (!validPath(f)) { out.textContent = 'File not found.'; return; }
+  document.getElementById('back').href = f.includes('/') ? f.slice(0, f.lastIndexOf('/') + 1) : './';
+  document.getElementById('raw').href = f;
+  try {
+    const res = await fetch(f);
+    if (!res.ok) throw new Error(res.status);
+    // Same-origin files we publish ourselves, so no sanitizer.
+    out.innerHTML = marked.parse(await res.text());
+  } catch (e) { out.textContent = 'File not found.'; return; }
+  const h1 = out.querySelector('h1');
+  if (h1) document.title = h1.textContent;
+  out.querySelectorAll('pre').forEach(pre => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = 'Copy';
+    b.onclick = async () => {
+      try { await navigator.clipboard.writeText(pre.querySelector('code')?.textContent ?? pre.textContent.replace(/^Copy|Copied/, '')); }
+      catch (e) { return; }
+      b.textContent = 'Copied';
+      setTimeout(() => { b.textContent = 'Copy'; }, 2000);
+    };
+    pre.prepend(b);
+  });
+}
+main();
+</script>
+</body>
+</html>
