@@ -168,7 +168,7 @@ Check: the picker above the prompt box now reads **ai-academy-test** and
   shows a card "1 File Changed" with **hello.html**.
 - The bottom bar shows **Changes** and **Create Branch & Commit**. You do
   not need to click them.
-- The model picker in the prompt box shows **Cursor Grok 4.6 Medium**.
+- The model picker in the prompt box shows a model name.
   Leave it. You can change the model later.
 
 **On Windows:**
@@ -182,7 +182,7 @@ Check: the picker above the prompt box now reads **ai-academy-test** and
   The text above the card can differ.
 - The bottom bar shows **Changes** and **Create Branch & Commit**. You do
   not need to click them.
-- The model picker in the prompt box shows **Cursor Grok 4.6 Medium**.
+- The model picker in the prompt box shows a model name.
   Leave it. You can change the model later.
 
 ### If Cursor asks before it runs something
