@@ -170,8 +170,8 @@ Step 1 looks correct. Generate the remaining steps now.
 1. In the generated file, rename one function where it is defined.
    Leave every call to it unchanged.
 2. Save the file and open the page again.
-3. Open the developer tools of the browser tab, click **Console**, and
-   copy the error.
+3. Click the **>_** button at the right end of the browser tab's address
+   bar. The developer tools open. Click **Console** and copy the error.
 
 Then send this prompt:
 
