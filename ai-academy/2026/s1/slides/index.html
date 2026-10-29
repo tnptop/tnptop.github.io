@@ -233,6 +233,17 @@ a.url { color: inherit; text-decoration: none; border-bottom: 3px solid var(--th
 .notes p + p, .notes ul { margin-top: 10px; }
 .notes ul { margin-bottom: 0; padding-left: 32px; }
 .notes-on .slide.active .notes { display: block; }
+
+/* Print and PDF: every slide on its own 1920x1080 page, no notes. */
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  html, body { height: auto; overflow: visible; }
+  #stage { position: static; transform: none !important; height: auto; overflow: visible; }
+  .slide { position: relative; display: flex; height: 1080px; break-after: page; }
+  .split { display: grid; }
+  .notes, .notes-on .slide.active .notes { display: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
 </style>
 </head>
 <body>
